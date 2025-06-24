@@ -1,5 +1,11 @@
 package com.diary.domain.diary.repository;
 
-public interface DiaryRepository {
+import java.util.List;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.diary.domain.diary.entity.Diary;
+
+public interface DiaryRepository extends JpaRepository<Diary, Long> {
+    List<Diary> findByGroupId(Long id);
 }
