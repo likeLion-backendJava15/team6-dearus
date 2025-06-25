@@ -12,8 +12,8 @@ public class CommentResponse {
 
     private Long id;
     private Long entryId;
-    private Long userId;
-    private String nickname;
+    private Long memberId;
+    private String memberNickname;
     private String content;
     private Long parentCommentId;
     private LocalDateTime createdAt;
@@ -23,8 +23,8 @@ public class CommentResponse {
         return CommentResponse.builder()
                 .id(comment.getId())
                 .entryId(comment.getDiaryEntry() != null ? comment.getDiaryEntry().getId() : null)
-                .userId(comment.getUser() != null ? comment.getUser().getId() : null)
-                .nickname(comment.getUser() != null ? comment.getUser().getNickname() : null)
+                .memberId(comment.getMember() != null ? comment.getMember().getId() : null)
+                .memberNickname(comment.getMember() != null ? comment.getMember().getNickname() : null)
                 .content(comment.getContent())
                 .parentCommentId(comment.getParentComment() != null ? comment.getParentComment().getId() : null)
                 .createdAt(comment.getCreatedAt())
