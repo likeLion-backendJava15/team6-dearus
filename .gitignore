@@ -1,0 +1,6 @@
+.vscode/
+*.env
+*.log
+*.tmp
+*.swp
+*.code-workspace
