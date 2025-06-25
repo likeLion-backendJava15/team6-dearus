@@ -11,8 +11,8 @@ import lombok.*;
 @NoArgsConstructor 
 @AllArgsConstructor
 @Builder
-
-public class DiaryDetailResponse {
+//일기장의 멤버들 조회 응답저리
+public class DiaryMemberResponse {
     private Long id;
     private String name;
     private List<MemberResponse> members;

@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/dearus?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
+    username: dearusUser
+    password: 0000
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update # 개발 중에는 update, 운영은 validate or none 권장
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  thymeleaf:
+    cache: false  # 개발 중에는 캐시 끄기 (수정 즉시 반영)
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true  # PUT, DELETE 처리 위해 필요 (form에서 _method 사용 시)
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type: trace  # 바인딩 파라미터까지 확인 가능 (실무에선 trace는 끄는 편)

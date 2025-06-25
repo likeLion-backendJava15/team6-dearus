@@ -7,6 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+//일기장명 수정 요청 처리
 public class DiaryUpdateRequest {
     private String name;
 }

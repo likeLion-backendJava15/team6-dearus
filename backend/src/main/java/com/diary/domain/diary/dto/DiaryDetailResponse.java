@@ -2,7 +2,7 @@ package com.diary.domain.diary.dto;
 
 import java.util.List;
 
-import com.diary.domain.entry.dto.EntryResponse;
+import com.diary.domain.entry.dto.EntryResponseDTO;
 
 import lombok.*;
 
@@ -11,10 +11,10 @@ import lombok.*;
 @NoArgsConstructor 
 @AllArgsConstructor
 @Builder
-
+//일장장의 일기들 조회 응답 처리
 public class DiaryDetailResponse {
     private Long id;
     private String name;
-    private List<EntryResponse> entries;
+    private List<EntryResponseDTO> entries;
 }
 
