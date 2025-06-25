@@ -9,7 +9,7 @@ import com.diary.domain.entry.entity.DiaryEntry;
 import com.diary.domain.entry.repository.DiaryEntryRepository;
 import com.diary.domain.member.entity.Member;
 import com.diary.domain.member.repository.MemberRepository;
-import com.diary.domain.member.security.MemberDetails;
+import com.diary.domain.member.security.CustomUserDetails;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -28,11 +28,11 @@ public class CommentService {
     private final DiaryEntryRepository diaryEntryRepository;
     private final MemberRepository memberRepository;
 
-    public CommentResponse createComment(Long entryId, CommentCreateRequest request, MemberDetails memberDetails) {
+    public CommentResponse createComment(Long entryId, CommentCreateRequest request, CustomUserDetails userDetails) {
         DiaryEntry entry = diaryEntryRepository.findById(entryId)
                 .orElseThrow(() -> new EntityNotFoundException("일기 항목을 찾을 수 없습니다."));
 
-        Member member = memberRepository.findByMemberId(memberDetails.getUsername())
+        Member member = memberRepository.findByMemberId(userDetails.getUsername())
                 .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
 
         Comment comment = Comment.builder()
@@ -52,11 +52,11 @@ public class CommentService {
                 .collect(toList());
     }
 
-    public CommentResponse updateComment(Long commentId, CommentUpdateRequest request, MemberDetails memberDetails) {
+    public CommentResponse updateComment(Long commentId, CommentUpdateRequest request, CustomUserDetails userDetails) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
 
-        if (!comment.getMember().getMemberId().equals(memberDetails.getUsername())) {
+        if (!comment.getMember().getMemberId().equals(userDetails.getUsername())) {
             throw new AccessDeniedException("댓글을 수정할 권한이 없습니다.");
         }
 
@@ -64,11 +64,11 @@ public class CommentService {
         return CommentResponse.from(comment);
     }
 
-    public void deleteComment(Long commentId, MemberDetails memberDetails) {
+    public void deleteComment(Long commentId, CustomUserDetails userDetails) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
 
-        if (!comment.getMember().getMemberId().equals(memberDetails.getUsername())) {
+        if (!comment.getMember().getMemberId().equals(userDetails.getUsername())) {
             throw new AccessDeniedException("댓글을 삭제할 권한이 없습니다.");
         }
 
