@@ -54,6 +54,23 @@ public class DiaryEntry {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    
+    // 태그
+    @ManyToMany
+    @JoinTable(
+            name = "Entry_Tag",
+            joinColumns = @JoinColumn(name = "entry_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags = new HashSet<>();
+
+    // getters & setters에 tags 추가
+    public Set<Tag> getTags() {
+        return tags;
+    }
+    public void setTags(Set<Tag> tags) {
+        this.tags = tags;
+  
 
     @PrePersist
     protected void onCreate() {
