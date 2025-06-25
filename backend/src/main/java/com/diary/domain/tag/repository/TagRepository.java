@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface TagRepository extends JpaRepository<Tag, Integer> {
-    Optional<Tag> findByName(String name);
+    Optional<Tag> findByName(String name); // 태그 이름으로 태그 찾는 메서드
 }
