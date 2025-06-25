@@ -28,6 +28,5 @@ public class Diary {
 
     @OneToMany(mappedBy = "diary", fetch = FetchType.LAZY)
     private List<DiaryMember> members = new ArrayList<>();
-
-
+    
 }

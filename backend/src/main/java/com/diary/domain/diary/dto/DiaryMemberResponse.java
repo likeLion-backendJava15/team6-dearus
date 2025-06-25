@@ -2,7 +2,7 @@ package com.diary.domain.diary.dto;
 
 import java.util.List;
 
-import com.diary.domain.entry.dto.EntryResponse;
+import com.diary.domain.member.dto.MemberResponse;
 
 import lombok.*;
 
@@ -15,6 +15,5 @@ import lombok.*;
 public class DiaryDetailResponse {
     private Long id;
     private String name;
-    private List<EntryResponse> entries;
+    private List<MemberResponse> members;
 }
-
