@@ -4,10 +4,10 @@ import com.diary.domain.comment.dto.CommentCreateRequest;
 import com.diary.domain.comment.dto.CommentResponse;
 import com.diary.domain.comment.dto.CommentUpdateRequest;
 import com.diary.domain.comment.service.CommentService;
+import com.diary.domain.member.security.MemberDetails;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,9 +23,9 @@ public class CommentController {
     public ResponseEntity<CommentResponse> createComment(
             @PathVariable Long entryId,
             @RequestBody CommentCreateRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal MemberDetails memberDetails) {
 
-        CommentResponse response = commentService.createComment(entryId, request, userDetails);
+        CommentResponse response = commentService.createComment(entryId, request, memberDetails);
         return ResponseEntity.ok(response);
     }
 
@@ -37,23 +37,22 @@ public class CommentController {
         return ResponseEntity.ok(comments);
     }
 
-
     @PutMapping("/{commentId}")
     public ResponseEntity<CommentResponse> updateComment(
             @PathVariable Long commentId,
             @RequestBody CommentUpdateRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal MemberDetails memberDetails) {
 
-        CommentResponse updated = commentService.updateComment(commentId, request, userDetails);
+        CommentResponse updated = commentService.updateComment(commentId, request, memberDetails);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteComment(
             @PathVariable Long commentId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal MemberDetails memberDetails) {
 
-        commentService.deleteComment(commentId, userDetails);
+        commentService.deleteComment(commentId, memberDetails);
         return ResponseEntity.noContent().build();
     }
 }

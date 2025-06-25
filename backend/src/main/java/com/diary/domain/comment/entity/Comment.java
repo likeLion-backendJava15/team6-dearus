@@ -1,7 +1,7 @@
 package com.diary.domain.comment.entity;
 
 import com.diary.domain.entry.entity.DiaryEntry;
-import com.diary.domain.member.entity.User;
+import com.diary.domain.member.entity.Member; 
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,8 +24,8 @@ public class Comment {
     private DiaryEntry diaryEntry;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
@@ -34,15 +34,12 @@ public class Comment {
     @JoinColumn(name = "parent_comment_id")
     private Comment parentComment;
 
-    
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-   
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
