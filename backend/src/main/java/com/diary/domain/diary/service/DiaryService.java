@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.diary.domain.diary.dto.DiaryCreateRequest;
-import com.diary.domain.diary.dto.DiaryMemberResponse;
 import com.diary.domain.diary.dto.DiaryResponse;
 import com.diary.domain.diary.dto.DiaryUpdateRequest;
 import com.diary.domain.diary.entity.Diary;
@@ -25,63 +24,66 @@ public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final MemberService memberService;
-    private final DiaryMemberRepository diaryMemberRepository;
 
-    // 일기장 생성 구현
+    // 일기장 생성 구현 <완료>
     public DiaryResponse createDiary(DiaryCreateRequest dto) {
-        //(멤버 유저 엔티티 가정)
-        DiaryMember currentMember = memberService.getCurrentUser(); // 현재 로그인 유저
+        DiaryMember currentMember = memberService.getCurrentUser();   //(멤버 유저 엔티티 가정)
+
+        
+        if (dto.getName() == null || dto.getName().trim().isEmpty()) {      // 이름이 null이거나 공백일 경우 예외
+            throw new CustomException("일기장 이름은 비어 있을 수 없습니다.", HttpStatus.BAD_REQUEST);
+        }
 
         Diary diary = Diary.builder()
                 .name(dto.getName())
                 .build();
+
         Diary saved = diaryRepository.save(diary);
         
-        //(현재 유저를 Owner로 멤버 추가 가정)
-        memberService.addMemberToDiary(currentMember, saved, Role.OWNER);
+        memberService.addMemberToDiary(currentMember, saved, Role.OWNER);  //(현재 유저를 Owner로 멤버 추가 가정)
         
         return toResponseDTO(saved);
     }
 
-    // 유저 기준 일기장 목록 조회 구현
-    public List<DiaryResponse> getMyDiaries() {
-        // 현재 유저 객체 생성
-        DiaryMember currentMember = memberService.getCurrentUser();
-
-        // 해당 유저가 속한 일기장 목록 위임
-        List<Diary> diaries = memberService.findDiariesByUser(currentMember);
-
-        return diaries.stream().map(this::toResponseDTO).collect(Collectors.toList());
-    }
-
-    // 일기장 상세 조회 구현 (일기장 - 일기 목록)
-    public DiaryMemberResponse getDiaryDetail(Long id) {
+    // 유저 기준 일기장 - <멤버 검증 고려 X>
+    public DiaryResponse getDiary(Long id) {
         Diary diary = diaryRepository.findById(id)
-            .orElseThrow(() -> new CustomException("일기장을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
-        return DiaryMemberResponse.builder()
-                .id(diary.getId())
-                .name(diary.getName())
-                .members(List.of()) // 나중에 멤버 연관관계 추가
-                .build();
+                    .filter(d -> !d.isDeleted())
+                    .orElseThrow(() -> new CustomException("존재하지 않거나 삭제된 일기장입니다.", HttpStatus.NOT_FOUND));
+        return toResponseDTO(diary);
     }
 
-    // 일기장 수정 구현
+    // 유저 기준 일기장 목록 조회 구현 - <멤버 검증 고려 X>
+    public List<DiaryResponse> getDiaryList() {
+        List<DiaryResponse> diaries = diaryRepository.findAll()
+                            .stream()
+                            .filter(d -> !d.isDeleted())  // 소프트 삭제된 건 제외
+                            .map(this::toResponseDTO)
+                            .collect(Collectors.toList());
+        return diaries;
+    }
+
+    // 일기장 수정 구현 (허용되지 않은 사용자 : 403 보류)
     public void updateDiary(Long id, DiaryUpdateRequest dto) {
         Diary diary = diaryRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Diary not found"));
+            .orElseThrow(() -> new CustomException("대상 일기장이 없습니다.", HttpStatus.NOT_FOUND));
+
+        // 일기장 사용자 검증 (보류)
+        
         diary.setName(dto.getName());
         diaryRepository.save(diary);
     }
 
     // 일기장 삭제 구현
-    public void deleteDiary(Long id, Long memberId) {
-        // 명시적으로 멤버 먼저 삭제 (보류 : 멤버 구현 필요)
-        diaryMemberRepository.deleteById(memberId);
-        
-        // 일기장 삭제 → entries는 cascade로 자동 삭제됨
-        diaryRepository.deleteById(id);
+    public void deleteDiary(Long diaryId, Long memberId) {
+        Diary diary = diaryRepository.findById(diaryId)
+                    .orElseThrow(() -> new CustomException("일기장을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+        diary.setDeleted(true); // 권한 확인 or 멤버 확인은 생략하고 deleted 마킹
+        diaryRepository.save(diary);
     }
 
+    // 일기장 응답 빌더
     private DiaryResponse toResponseDTO(Diary diary) {
         return DiaryResponse.builder()
                 .id(diary.getId())
