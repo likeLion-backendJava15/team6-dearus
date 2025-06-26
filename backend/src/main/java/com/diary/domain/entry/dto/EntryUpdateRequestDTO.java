@@ -1,5 +1,7 @@
 package com.diary.domain.entry.dto;
 
+import java.util.List;
+
 import com.diary.domain.entry.enums.Emotion;
 
 import jakarta.validation.constraints.NotBlank;
@@ -19,4 +21,6 @@ public class EntryUpdateRequestDTO {
     private Emotion emotion;
 
     private String imageUrl; // 변경 가능
+
+    private List<String> tags;
 }

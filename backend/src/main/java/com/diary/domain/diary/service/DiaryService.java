@@ -42,7 +42,7 @@ public class DiaryService {
         return DiaryDetailResponse.builder()
                 .id(diary.getId())
                 .name(diary.getName())
-                .members(List.of()) // 나중에 멤버 연관관계 추가
+                // .members(List.of()) // 나중에 멤버 연관관계 추가
                 .build();
     }
 

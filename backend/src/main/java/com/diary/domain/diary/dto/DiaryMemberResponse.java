@@ -11,8 +11,7 @@ import lombok.*;
 @NoArgsConstructor 
 @AllArgsConstructor
 @Builder
-
-public class DiaryDetailResponse {
+public class DiaryMemberResponse {
     private Long id;
     private String name;
     private List<MemberResponse> members;
