@@ -1,5 +1,6 @@
 package com.diary.domain.tag.controller;
 
+import com.diary.domain.entry.dto.EntryResponseDTO;
 import com.diary.domain.tag.dto.EntryTagsRequest;
 import com.diary.domain.tag.dto.TagRequest;
 import com.diary.domain.tag.dto.TagResponse;
@@ -21,6 +22,7 @@ public class TagController {
         this.tagService = tagService;
     }
 
+    //[1] 태그 생성
     @PostMapping("/tag")
     public ResponseEntity<TagResponse> createTag(
             @Valid @RequestBody TagRequest request
@@ -32,6 +34,7 @@ public class TagController {
                 .body(created);                 // { "id":…, "name":… }
     }
 
+    /**[2] 태그 조회 **/
     @GetMapping("/tag")
     public ResponseEntity<List<TagResponse>> getAllTags() {
         // 모든 태그 조회 API
@@ -54,12 +57,32 @@ public class TagController {
     /** [4] 일기-태그 제거 **/
     @DeleteMapping("/entry/{entryId}/tags/{tagId}")
     public ResponseEntity<Map<String, String>> removeTagFromEntry(
-            @PathVariable Long entryId,
+            @PathVariable Integer entryId,
             @PathVariable Integer tagId
     ) {
         // 일기에서 태그 제거 API
         tagService.removeTagFromEntry(entryId, tagId);
         return ResponseEntity
                 .ok(Map.of("message", "삭제 완료"));
+    }
+
+    /** [5] 태그별 일기 조회 **/
+    @GetMapping("/tag/{tagId}/entries")
+    public ResponseEntity<List<EntryResponseDTO>> getEntriesByTag(@PathVariable Long tagId) {
+        List<EntryResponseDTO> entries = tagService.getEntriesByTag(tagId);
+        return ResponseEntity.ok(entries);
+    }
+    /** [6] 태그 수정 **/
+    @PutMapping("/tag/{tagId}")
+    public ResponseEntity<TagResponse> updateTag(@PathVariable Long tagId,
+                                                 @Valid @RequestBody TagRequest req) {
+        TagResponse updated = tagService.updateTag(tagId, req);
+        return ResponseEntity.ok(updated);
+    }
+    /** [7] 태그 삭제 **/
+    @DeleteMapping("/tag/{tagId}")
+    public ResponseEntity<Void> deleteTag(@PathVariable Long tagId) {
+        tagService.deleteTag(tagId);
+        return ResponseEntity.noContent().build();
     }
 }

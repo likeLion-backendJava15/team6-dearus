@@ -25,6 +25,9 @@ public class Diary {
     @Column(nullable = false)
     private String name;
 
+    @Column(name = "is_deleted")
+    private boolean deleted = false;
+
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryEntry> entries = new ArrayList<>();
 

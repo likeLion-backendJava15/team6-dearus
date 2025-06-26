@@ -1,5 +1,6 @@
 package com.diary.domain.tag.service;
 
+import com.diary.domain.entry.dto.EntryResponseDTO;
 import com.diary.domain.entry.entity.DiaryEntry;
 import com.diary.domain.entry.repository.DiaryEntryRepository;
 import com.diary.domain.tag.dto.EntryTagsRequest;
@@ -7,6 +8,7 @@ import com.diary.domain.tag.dto.TagRequest;
 import com.diary.domain.tag.dto.TagResponse;
 import com.diary.domain.tag.entity.Tag;
 import com.diary.domain.tag.repository.TagRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ public class TagService {
         this.diaryEntryRepository = diaryEntryRepository;
     }
 
+    // 1. 태그 생성
     @Transactional
     public TagResponse createTag(TagRequest request) {
         // 이미 태그가 존재하는지 확인
@@ -45,11 +48,39 @@ public class TagService {
         return new TagResponse(savedTag.getId(), savedTag.getName());
     }
 
+    // 2) 전체 태그 조회
     @Transactional(readOnly = true)
     public List<TagResponse> getAllTags() {
         // 모든 태그 조회 후 DTO 변환 반환
         return tagRepository.findAll().stream()
                 .map(tag -> new TagResponse(tag.getId(), tag.getName()))
+                .collect(Collectors.toList());
+    }
+
+    // 3) 태그 수정
+    public TagResponse updateTag(Long tagId, TagRequest request) {
+        Tag tag = tagRepository.findById(tagId)
+                .orElseThrow(() -> new EntityNotFoundException("태그 번호 없음: " + tagId));
+        tag.setName(request.getName());
+        Tag saved = tagRepository.save(tag);
+        return new TagResponse(saved.getId(), saved.getName());
+    }
+
+    // 4) 태그 삭제
+    public void deleteTag(Long tagId) {
+        Tag tag = tagRepository.findById(tagId)
+                .orElseThrow(() -> new EntityNotFoundException("태그 번호 없음: " + tagId));
+        tagRepository.delete(tag);
+    }
+
+    // 5) 태그별 일기 조회
+    @Transactional(readOnly = true)
+    public List<EntryResponseDTO> getEntriesByTag(Long tagId) {
+        Tag tag = tagRepository.findById(tagId)
+                .orElseThrow(() -> new EntityNotFoundException("Tag not found: " + tagId));
+        return tag.getEntries()
+                .stream()
+                .map(this::toEntryResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -69,7 +100,7 @@ public class TagService {
     }
 
     @Transactional
-    public void removeTagFromEntry(Long entryId, Integer tagId) {
+    public void removeTagFromEntry(Long entryId, Long tagId) {
         // 일기 조회
         DiaryEntry entry = diaryEntryRepository.findById(entryId)
                 .orElseThrow(() -> new RuntimeException("일기 번호 없음 : " + entryId));
@@ -81,5 +112,21 @@ public class TagService {
         entry.getTags().remove(tag);
 
         diaryEntryRepository.save(entry);
+    }
+
+    // Helper: DiaryEntry → EntryResponse
+    private EntryResponseDTO toEntryResponseDTO(DiaryEntry e) {
+        return EntryResponseDTO.builder()
+                .id(e.getId())
+                .diaryId(e.getDiary().getId())
+                .authorId(e.getAuthor().getId())
+                .authorNickname(e.getAuthor().getNickname())
+                .title(e.getTitle())
+                .content(e.getContent())
+                .emotion(e.getEmotion().name())
+                .imageUrl(e.getImageUrl())
+                .createdAt(e.getCreatedAt())
+                .updatedAt(e.getUpdatedAt())
+                .build();
     }
 }

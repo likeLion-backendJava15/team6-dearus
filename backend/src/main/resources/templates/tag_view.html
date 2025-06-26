@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <title>태그 뷰 </title>
+    <style>
+        body { font-family:sans-serif; margin:2rem; }
+        ul { list-style:none; padding:0; }
+        li { margin-bottom:1rem; }
+        .actions { font-size:0.9rem; margin-left:1rem; }
+    </style>
+</head>
+<body>
+
+<h1>태그 관리</h1>
+
+<!-- 새 태그 생성 -->
+<form th:action="@{/api/tag}" method="post">
+    <input type="text" name="name" placeholder="새 태그 이름" required/>
+    <button type="submit">생성</button>
+</form>
+
+<hr/>
+
+<ul>
+    <!-- 1) 수정 모드일 때 -->
+    <li th:each="tag : ${tags}"
+        th:if="${editTagId} == ${tag.id}">
+        <form th:action="@{/api/tag/{id}(id=${tag.id})}" method="post" style="display:inline">
+            <input type="hidden" name="_method" value="put"/>
+            <input type="text" name="name" th:value="${tag.name}" required/>
+            <button type="submit">저장</button>
+        </form>
+        <!-- 취소: 수정 모드 해제 -->
+        <a th:href="@{/tag_view}">취소</a>
+    </li>
+
+    <!-- 2) 일반 모드일 때 -->
+    <li th:each="tag : ${tags}"
+        th:unless="${editTagId} == ${tag.id}">
+        <!-- 태그별 일기 조회 링크 -->
+        <a th:href="@{/tag_view/{id}(id=${tag.id})}"
+           th:text="${tag.name}">태그명</a>
+
+        <span class="actions">
+        <!-- 수정 모드로 진입 -->
+        <a th:href="@{/tag_view(editTagId=${tag.id})}">수정</a>
+
+            <!-- 삭제 -->
+        <form th:action="@{/api/tag/{id}(id=${tag.id})}"
+              method="post"
+              style="display:inline"
+              onsubmit="return confirm('정말 삭제하시겠습니까?');">
+          <input type="hidden" name="_method" value="delete"/>
+          <button type="submit">삭제</button>
+        </form>
+      </span>
+    </li>
+
+    <!-- 태그가 하나도 없을 때 -->
+    <li th:if="${#lists.isEmpty(tags)}">등록된 태그가 없습니다.</li>
+</ul>
+
+<hr/>
+
+<!-- 선택된 태그의 일기들 -->
+<div th:if="${selectedTag != null}">
+    <h2 th:text="'#' + ${selectedTag.name} + ' 태그 일기 목록'"></h2>
+    <ul>
+        <li th:each="e : ${entries}">
+            <h3 th:text="${e.title}">제목</h3>
+            <p th:text="${e.content}">본문</p>
+            <!-- 기타 필드 생략 -->
+        </li>
+        <li th:if="${#lists.isEmpty(entries)}">해당 태그가 달린 일기가 없습니다.</li>
+    </ul>
+</div>
+
+</body>
+</html>
