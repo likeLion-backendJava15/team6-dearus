@@ -17,7 +17,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class Tag {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(nullable = false,unique = true)
     private String name; // 중복 불가 태그 이름
