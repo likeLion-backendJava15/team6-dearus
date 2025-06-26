@@ -9,7 +9,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class EntryListResponseDto { // 목록 조회
+public class EntryListResponseDTO { // 목록 조회
     private Long id;
     private String title;
     private Emotion emotion;
