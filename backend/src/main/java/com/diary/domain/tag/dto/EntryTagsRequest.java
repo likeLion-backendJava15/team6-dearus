@@ -13,5 +13,5 @@ import java.util.List;
 // 일기에 연결할 태그들의 ID 목록 담는 DTO
 public class EntryTagsRequest {
     @NotEmpty(message = "태그 목록은 비어있을 수 없습니다")
-    private List<Integer> tagIds;
+    private List<Long> tagIds;
 }
