@@ -12,6 +12,7 @@ import com.diary.domain.diary.dto.DiaryUpdateRequest;
 import com.diary.domain.diary.entity.Diary;
 import com.diary.domain.diary.repository.DiaryRepository;
 import com.diary.domain.member.entity.DiaryMember;
+import com.diary.domain.member.entity.DiaryMember.Role;
 import com.diary.domain.member.repository.DiaryMemberRepository;
 import com.diary.domain.member.service.MemberService;
 import com.diary.global.exception.CustomException;
@@ -27,7 +28,7 @@ public class DiaryService {
 
     // 일기장 생성 구현 <완료>
     public DiaryResponse createDiary(DiaryCreateRequest dto) {
-        DiaryMember currentMember = memberService.getCurrentUser();   //(멤버 유저 엔티티 가정)
+        //DiaryMember currentMember = memberService.getCurrentUser();   //(멤버 유저 엔티티 가정)
 
         
         if (dto.getName() == null || dto.getName().trim().isEmpty()) {      // 이름이 null이거나 공백일 경우 예외
@@ -40,7 +41,7 @@ public class DiaryService {
 
         Diary saved = diaryRepository.save(diary);
         
-        memberService.addMemberToDiary(currentMember, saved, Role.OWNER);  //(현재 유저를 Owner로 멤버 추가 가정)
+        //memberService.addMemberToDiary(currentMember, saved, Role.OWNER);  //(현재 유저를 Owner로 멤버 추가 가정)
         
         return toResponseDTO(saved);
     }

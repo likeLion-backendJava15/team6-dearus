@@ -9,9 +9,7 @@ import com.diary.domain.diary.entity.Diary;
 import com.diary.domain.diary.repository.DiaryRepository;
 import com.diary.domain.diary.service.DiaryService;
 import com.diary.domain.member.entity.DiaryMember;
-import com.diary.domain.member.entity.User;
 import com.diary.domain.member.service.MemberService;
-import com.diary.domain.member.type.Role;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
