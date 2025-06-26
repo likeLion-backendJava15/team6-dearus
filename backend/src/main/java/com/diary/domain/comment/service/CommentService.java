@@ -1,4 +1,4 @@
-// package com.diary.domain.comment.service;
+package com.diary.domain.comment.service;
 
 import com.diary.domain.comment.dto.CommentCreateRequest;
 import com.diary.domain.comment.dto.CommentResponse;
@@ -9,29 +9,40 @@ import com.diary.domain.entry.entity.DiaryEntry;
 import com.diary.domain.entry.repository.DiaryEntryRepository;
 import com.diary.domain.member.entity.Member;
 import com.diary.domain.member.repository.MemberRepository;
-import com.diary.domain.member.security.CustomUserDetails;
+import com.diary.global.auth.CustomUserDetails;
+import com.diary.global.exception.CustomException;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-// @Service
-// @RequiredArgsConstructor
-// public class CommentService {
+@Service
+@RequiredArgsConstructor
+public class CommentService {
 
-//     private final CommentRepository commentRepository;
-//     private final DiaryEntryRepository diaryEntryRepository;
-//     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final DiaryEntryRepository diaryEntryRepository;
+    private final MemberRepository memberRepository;
+
+    private Member getMemberOrThrow(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    }
+
+    private DiaryEntry getEntryOrThrow(Long entryId) {
+        return diaryEntryRepository.findById(entryId)
+                .orElseThrow(() -> new CustomException("일기를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    }
 
     public CommentResponse createComment(Long entryId, CommentCreateRequest request, CustomUserDetails userDetails) {
-        DiaryEntry entry = diaryEntryRepository.findById(entryId)
-                .orElseThrow(() -> new EntityNotFoundException("일기 항목을 찾을 수 없습니다."));
+        DiaryEntry entry = getEntryOrThrow(entryId);
 
-        Member member = memberRepository.findByUserId(userDetails.getUsername())
-                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        Member member = getMemberOrThrow(request.getMemberId());
 
         Comment parent = null;
         if (request.getParentCommentId() != null) {
@@ -46,8 +57,8 @@ import java.util.*;
                 .parentComment(parent)
                 .build();
 
-//         return CommentResponse.from(commentRepository.save(comment));
-//     }
+        return CommentResponse.from(commentRepository.save(comment));
+    }
 
     public List<CommentResponse> getComments(Long entryId) {
         List<Comment> comments = commentRepository.findByDiaryEntryId(entryId);
@@ -83,9 +94,9 @@ import java.util.*;
             throw new AccessDeniedException("댓글을 수정할 권한이 없습니다.");
         }
 
-//         comment.setContent(request.getContent());
-//         return CommentResponse.from(comment);
-//     }
+        comment.setContent(request.getContent());
+        return CommentResponse.from(comment);
+    }
 
     public void deleteComment(Long commentId, CustomUserDetails userDetails) {
         Comment comment = commentRepository.findById(commentId)

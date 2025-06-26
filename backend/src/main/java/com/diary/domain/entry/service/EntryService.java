@@ -49,9 +49,9 @@ public class EntryService {
                 .orElseThrow(() -> new CustomException("일기장을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 
-    private DiaryEntry getEntryOrThrow(Long diaryId) {
-        return diaryEntryRepository.findById(diaryId)
-                .orElseThrow(() -> new CustomException("일기장을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    private DiaryEntry getEntryOrThrow(Long entryId) {
+        return diaryEntryRepository.findById(entryId)
+                .orElseThrow(() -> new CustomException("일기를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 
     // 일기 등록
