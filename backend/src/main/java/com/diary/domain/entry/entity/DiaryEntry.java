@@ -1,15 +1,17 @@
 package com.diary.domain.entry.entity;
 
+import com.diary.domain.tag.entity.Tag;
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 import com.diary.domain.diary.entity.Diary;
 import com.diary.domain.entry.enums.Emotion;
 import com.diary.domain.member.entity.Member;
-import com.diary.domain.tag.entity.Tag;
+
+import java.util.Set;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "Diary_Entry")
@@ -29,7 +31,7 @@ public class DiaryEntry {
     @JoinColumn(name = "diary_id", nullable = false)
     private Diary diary;
 
-    // Member:Entry(1:N)
+    // User:Entry(1:N)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private Member author;
@@ -71,10 +73,10 @@ public class DiaryEntry {
     public Set<Tag> getTags() {
         return tags;
     }
-    
     public void setTags(Set<Tag> tags) {
         this.tags = tags;
     }
+  
 
     @PrePersist
     protected void onCreate() {
