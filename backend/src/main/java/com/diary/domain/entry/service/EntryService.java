@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.diary.domain.diary.entity.Diary;
 import com.diary.domain.diary.repository.DiaryRepository;
 import com.diary.domain.entry.dto.EntryCreateRequestDTO;
-import com.diary.domain.entry.dto.EntryListResponseDto;
+import com.diary.domain.entry.dto.EntryListResponseDTO;
 import com.diary.domain.entry.dto.EntryResponseDTO;
 import com.diary.domain.entry.dto.EntryUpdateRequestDTO;
 import com.diary.domain.entry.entity.DiaryEntry;
@@ -67,10 +67,10 @@ public class EntryService {
     }
 
     // 일기 목록 조회
-    public List<EntryListResponseDto> getAllEntriesByDiaryId(Long diaryId) {
+    public List<EntryListResponseDTO> getAllEntriesByDiaryId(Long diaryId) {
         List<DiaryEntry> entries = diaryEntryRepository.findByDiaryIdOrderByCreatedAtDesc(diaryId);
         return entries.stream()
-                .map((DiaryEntry entry) -> EntryListResponseDto.builder()
+                .map((DiaryEntry entry) -> EntryListResponseDTO.builder()
                         .id(entry.getId())
                         .title(entry.getTitle())
                         .emotion(entry.getEmotion())

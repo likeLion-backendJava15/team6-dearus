@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>일기 목록</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h1>일기 목록</h1>
+
+    <!-- 일기장 이름 (선택) -->
+    <div th:if="${diaryName != null}">
+        <h2 th:text="'[' + ${diaryName} + '] 일기장'"></h2>
+    </div>
+
+    <!-- 일기 리스트 -->
+    <div th:if="${entries != null}">
+        <ul>
+            <li th:each="entry : ${entries}">
+                <a th:href="@{/entry/{id}(id=${entry.id})}">
+                    <strong th:text="${entry.title}">제목</strong>
+                </a>
+                <div>
+                    <span th:text="${#temporals.format(entry.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span> |
+                    <span th:text="${entry.emotion}">감정</span>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div th:if="${entries == null or #lists.isEmpty(entries)}">
+        <p>작성된 일기가 없습니다.</p>
+    </div>
+
+    <a href="/entry/create">
+        <button>새 일기 쓰기</button>
+    </a>
+</body>
+</html>
