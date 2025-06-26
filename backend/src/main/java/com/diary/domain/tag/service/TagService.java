@@ -54,7 +54,7 @@ public class TagService {
     }
 
     @Transactional
-    public void linkTagsToEntry(Integer entryId, EntryTagsRequest request) {
+    public void linkTagsToEntry(Long entryId, EntryTagsRequest request) {
         // 일기 조회
         DiaryEntry entry = diaryEntryRepository.findById(entryId)
                 .orElseThrow(() -> new RuntimeException("일기 번호 없음 : " + entryId));
@@ -69,7 +69,7 @@ public class TagService {
     }
 
     @Transactional
-    public void removeTagFromEntry(Integer entryId, Integer tagId) {
+    public void removeTagFromEntry(Long entryId, Long tagId) {
         // 일기 조회
         DiaryEntry entry = diaryEntryRepository.findById(entryId)
                 .orElseThrow(() -> new RuntimeException("일기 번호 없음 : " + entryId));
