@@ -42,7 +42,7 @@ public class TagController {
     /** [3] 일기-태그 연결 **/
     @PostMapping("/entry/{entryId}/tags")
     public ResponseEntity<Map<String, String>> linkTagsToEntry(
-            @PathVariable Integer entryId,
+            @PathVariable Long entryId,
             @Valid @RequestBody EntryTagsRequest request
     ) {
         // 일기에 태그 연결 API
@@ -54,8 +54,8 @@ public class TagController {
     /** [4] 일기-태그 제거 **/
     @DeleteMapping("/entry/{entryId}/tags/{tagId}")
     public ResponseEntity<Map<String, String>> removeTagFromEntry(
-            @PathVariable Integer entryId,
-            @PathVariable Integer tagId
+            @PathVariable Long entryId,
+            @PathVariable Long tagId
     ) {
         // 일기에서 태그 제거 API
         tagService.removeTagFromEntry(entryId, tagId);

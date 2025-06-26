@@ -8,6 +8,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class TagResponse {
-    private final Integer id;
+    private final Long id;
     private final String name;
 }
