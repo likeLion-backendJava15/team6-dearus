@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface TagRepository extends JpaRepository<Tag, Integer> {
+public interface TagRepository extends JpaRepository<Tag, Long> {
     Optional<Tag> findByName(String name); // 태그 이름으로 태그 찾는 메서드
 }
