@@ -3,10 +3,3 @@ HELP.md
 ### VS Code ###
 .vscode/
 .DS_Store
-
-.vscode/
-*.env
-*.log
-*.tmp
-*.swp
-*.code-workspace
