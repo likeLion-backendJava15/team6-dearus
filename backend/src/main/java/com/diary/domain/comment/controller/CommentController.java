@@ -4,7 +4,7 @@ import com.diary.domain.comment.dto.CommentCreateRequest;
 import com.diary.domain.comment.dto.CommentResponse;
 import com.diary.domain.comment.dto.CommentUpdateRequest;
 import com.diary.domain.comment.service.CommentService;
-import com.diary.domain.member.security.CustomUserDetails;
+import com.diary.global.auth.CustomUserDetails;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

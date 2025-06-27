@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>일기 작성</title>
+
+    <!-- Toast UI Editor CDN -->
+    <link
+      rel="stylesheet"
+      href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css"
+    />
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+
+    <style>
+      body {
+        padding: 20px;
+      }
+      input,
+      select,
+      button {
+        display: block;
+        margin-bottom: 15px;
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>일기 작성</h2>
+    <input type="hidden" id="diaryId" th:value="${diaryId}" />
+
+    <!-- 제목 입력 -->
+    <input type="text" id="title" placeholder="제목을 입력하세요" />
+
+    <!-- 감정 선택 -->
+    <select id="emotion">
+      <option value="행복해">행복해</option>
+      <option value="즐거워">즐거워</option>
+      <option value="감사해">감사해</option>
+      <option value="사랑해">사랑해</option>
+      <option value="뿌듯해">뿌듯해</option>
+      <option value="그저그래">그저그래</option>
+      <option value="화나">화나</option>
+      <option value="힘들어">힘들어</option>
+    </select>
+
+    <!-- Toast UI Editor -->
+    <div id="editor"></div>
+
+    <!-- 저장 버튼 -->
+    <button type="button" onclick="submitEntry()">저장</button>
+
+    <script>
+      const editor = new toastui.Editor({
+        el: document.querySelector("#editor"),
+        height: "500px",
+        initialEditType: "wysiwyg",
+        previewStyle: "vertical",
+        hooks: {
+          addImageBlobHook: (blob, callback) => {
+            const formData = new FormData();
+            formData.append("image", blob);
+
+            fetch("/image/upload", {
+              method: "POST",
+              body: formData,
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                callback(data.url, "업로드 이미지");
+              })
+              .catch(() => alert("이미지 업로드 실패"));
+          },
+        },
+      });
+
+      function submitEntry() {
+        const content = editor.getHTML();
+        const title = document.getElementById("title").value;
+        const emotion = document.getElementById("emotion").value;
+        const diaryId = document.getElementById("diaryId").value;
+
+        if (!diaryId) {
+          alert("일기장 ID가 없습니다.");
+          return;
+        }
+
+        const data = {
+          title: title,
+          content: content,
+          emotion: emotion,
+          diaryId: parseInt(diaryId)
+        };
+
+        fetch("/entry", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error("요청 실패");
+            return res.json();
+          })
+          .then(() => {
+            alert("작성 완료!");
+            location.href = "/diary";
+          })
+          .catch((err) => {
+            alert("저장 실패: " + err.message);
+          });
+      }
+    </script>
+  </body>
+</html>

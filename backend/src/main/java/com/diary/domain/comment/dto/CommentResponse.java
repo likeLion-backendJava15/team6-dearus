@@ -3,10 +3,14 @@ package com.diary.domain.comment.dto;
 import com.diary.domain.comment.entity.Comment;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
+@Setter 
 @Builder
 public class CommentResponse {
 
@@ -18,6 +22,8 @@ public class CommentResponse {
     private Long parentCommentId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private List<CommentResponse> children = new ArrayList<>(); 
 
     public static CommentResponse from(Comment comment) {
         return CommentResponse.builder()
