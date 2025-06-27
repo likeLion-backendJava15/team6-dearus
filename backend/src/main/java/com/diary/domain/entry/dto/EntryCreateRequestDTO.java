@@ -1,5 +1,7 @@
 package com.diary.domain.entry.dto;
 
+import java.util.List;
+
 import com.diary.domain.entry.enums.Emotion;
 
 import jakarta.validation.constraints.NotBlank;
@@ -24,4 +26,6 @@ public class EntryCreateRequestDTO {
     private Emotion emotion;
 
     private String imageUrl;
+
+    private List<String> tags;
 }

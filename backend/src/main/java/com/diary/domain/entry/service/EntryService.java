@@ -17,7 +17,10 @@ import com.diary.domain.entry.entity.DiaryEntry;
 import com.diary.domain.entry.repository.DiaryEntryRepository;
 import com.diary.domain.member.entity.Member;
 import com.diary.domain.member.repository.MemberRepository;
+import com.diary.domain.tag.entity.Tag;
+import com.diary.domain.tag.repository.TagRepository;
 import com.diary.global.exception.CustomException;
+import com.diary.global.util.HtmlImageParser;
 
 @Service
 @Transactional
@@ -26,12 +29,14 @@ public class EntryService {
     private final DiaryEntryRepository diaryEntryRepository;
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
+    private final TagRepository tagRepository;
 
     public EntryService(DiaryEntryRepository diaryEntryRepository, DiaryRepository diaryRepository,
-            MemberRepository memberRepository) {
+            MemberRepository memberRepository, TagRepository tagRepository) {
         this.diaryEntryRepository = diaryEntryRepository;
         this.diaryRepository = diaryRepository;
         this.memberRepository = memberRepository;
+        this.tagRepository = tagRepository;
     }
 
     private Member getMemberOrThrow(Long memberId) {
@@ -44,26 +49,42 @@ public class EntryService {
                 .orElseThrow(() -> new CustomException("일기장을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 
-    private DiaryEntry getEntryOrThrow(Long diaryId) {
-        return diaryEntryRepository.findById(diaryId)
-                .orElseThrow(() -> new CustomException("일기장을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    private DiaryEntry getEntryOrThrow(Long entryId) {
+        return diaryEntryRepository.findById(entryId)
+                .orElseThrow(() -> new CustomException("일기를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 
     // 일기 등록
     public Long createEntry(EntryCreateRequestDTO requestDTO, Long authorId) {
         Member author = getMemberOrThrow(authorId);
-        Diary diary = getDiaryOrThrow(authorId);
+        Diary diary = getDiaryOrThrow(requestDTO.getDiaryId());
+
+        // 대표 이미지가 비어 있으면 content에서 자동 추출
+        String resolvedImageUrl = requestDTO.getImageUrl();
+        if (resolvedImageUrl == null || resolvedImageUrl.isBlank()) {
+            resolvedImageUrl = HtmlImageParser.extractFirstImageUrl(requestDTO.getContent());
+        }
 
         DiaryEntry entry = DiaryEntry.builder()
                 .diary(diary)
                 .author(author)
                 .title(requestDTO.getTitle())
                 .content(requestDTO.getContent())
-                .imageUrl(requestDTO.getImageUrl())
+                .imageUrl(resolvedImageUrl)
                 .emotion(requestDTO.getEmotion())
                 .build();
 
-        return diaryEntryRepository.save(entry).getId();
+        if (requestDTO.getTags() != null) {
+            for (String tagName : requestDTO.getTags()) {
+                Tag tag = tagRepository.findByName(tagName)
+                        .orElseGet(() -> tagRepository.save(new Tag(tagName)));
+                entry.getTags().add(tag);
+            }
+        }
+
+        diaryEntryRepository.save(entry);
+
+        return entry.getId();
     }
 
     // 일기 목록 조회
@@ -113,6 +134,19 @@ public class EntryService {
                 requestDto.getContent(),
                 requestDto.getImageUrl(),
                 requestDto.getEmotion());
+
+        // 태그 수정
+        if (requestDto.getTags() != null) {
+            // 기존 태그 제거
+            entry.getTags().clear();
+
+            // 새 태그 리스트
+            for (String tagName : requestDto.getTags()) {
+                Tag tag = tagRepository.findByName(tagName)
+                        .orElseGet(() -> tagRepository.save(new Tag(tagName)));
+                entry.getTags().add(tag);
+            }
+        }
     }
 
     // 일기 삭제

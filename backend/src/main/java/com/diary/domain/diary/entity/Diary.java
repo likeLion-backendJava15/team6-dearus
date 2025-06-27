@@ -14,6 +14,7 @@ import com.diary.domain.member.entity.DiaryMember;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "diary")
 @Builder
 public class Diary {
 
@@ -21,6 +22,7 @@ public class Diary {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
     @Column(name = "is_deleted")
@@ -29,7 +31,7 @@ public class Diary {
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryEntry> entries = new ArrayList<>();
 
-    @OneToMany(mappedBy = "diary", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "diary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryMember> members = new ArrayList<>();
     
 }

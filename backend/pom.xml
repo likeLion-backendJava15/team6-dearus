@@ -122,6 +122,13 @@
       <classifier>jakarta</classifier>
       <scope>provided</scope>
     </dependency>
+
+    <dependency>
+      <groupId>com.querydsl</groupId>
+      <artifactId>querydsl-jpa</artifactId>
+      <version>5.1.0</version>
+    </dependency>
+
     <dependency>
       <groupId>jakarta.persistence</groupId>
       <artifactId>jakarta.persistence-api</artifactId>
@@ -137,23 +144,22 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <annotationProcessorPaths>
-            <path>
-              <path>
-                <groupId>com.querydsl</groupId>
-                <artifactId>querydsl-apt</artifactId>
-                <version>5.1.0</version>
-                <classifier>jakarta</classifier>
-              </path>
-
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok</artifactId>
-            </path>
-            <path>
+            <annotationProcessorPath>
+              <groupId>com.querydsl</groupId>
+              <artifactId>querydsl-apt</artifactId>
+              <version>5.1.0</version>
+              <classifier>jakarta</classifier>
+            </annotationProcessorPath>
+            <annotationProcessorPath>
               <groupId>jakarta.persistence</groupId>
               <artifactId>jakarta.persistence-api</artifactId>
               <version>3.1.0</version>
-            </path>
-
+            </annotationProcessorPath>
+            <annotationProcessorPath>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>1.18.30</version>
+            </annotationProcessorPath>
           </annotationProcessorPaths>
         </configuration>
       </plugin>

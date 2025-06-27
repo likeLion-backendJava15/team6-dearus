@@ -1,38 +1,61 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>일기 목록</title>
-    <meta charset="UTF-8">
+  <meta charset="UTF-8">
+  <title>일기 목록</title>
+  <style>
+    body { padding: 20px; font-family: sans-serif; }
+    .entry-list { list-style: none; padding: 0; }
+    .entry-item { border-bottom: 1px solid #ddd; padding: 10px 0; }
+    .entry-title { font-weight: bold; font-size: 18px; margin-bottom: 5px; color: blue; text-decoration: underline; cursor: pointer; }
+    .entry-meta { font-size: 14px; color: #666; }
+    .write-btn { margin-top: 20px; }
+  </style>
 </head>
 <body>
-    <h1>일기 목록</h1>
 
-    <!-- 일기장 이름 (선택) -->
-    <div th:if="${diaryName != null}">
-        <h2 th:text="'[' + ${diaryName} + '] 일기장'"></h2>
+<h2 th:text="'📘 ' + ${diaryName} + '의 일기들'">일기 목록</h2>
+
+<ul class="entry-list">
+  <li th:each="entry : ${entryList}" class="entry-item">
+    
+    <!-- 제목에 상세 페이지 링크 추가 -->
+    <a th:href="@{'/entry/detail/' + ${entry.id}}" class="entry-title" th:text="${entry.title}">제목</a>
+
+    <!-- 메타 정보: 감정, 작성자, 날짜 -->
+    <div class="entry-meta">
+      <span th:utext="${#strings.arrayJoin({'감정: ', getEmotionEmoji(entry.emotion)}, '')}"></span> |
+      <span th:text="'작성자: ' + ${entry.authorNickname}">작성자</span> |
+      <span th:text="${#temporals.format(entry.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span>
     </div>
+  </li>
+</ul>
 
-    <!-- 일기 리스트 -->
-    <div th:if="${entries != null}">
-        <ul>
-            <li th:each="entry : ${entries}">
-                <a th:href="@{/entry/{id}(id=${entry.id})}">
-                    <strong th:text="${entry.title}">제목</strong>
-                </a>
-                <div>
-                    <span th:text="${#temporals.format(entry.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span> |
-                    <span th:text="${entry.emotion}">감정</span>
-                </div>
-            </li>
-        </ul>
-    </div>
+<!-- 글쓰기 버튼 -->
+<div class="write-btn">
+  <a th:href="@{'/entry/form'(diaryId=${diaryId})}">
+    <button>✍️ 글쓰기</button>
+  </a>
+</div>
 
-    <div th:if="${entries == null or #lists.isEmpty(entries)}">
-        <p>작성된 일기가 없습니다.</p>
-    </div>
+<!-- 감정별 이모지 매핑 스크립트 -->
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  function getEmotionEmoji(emotion) {
+    const map = {
+      '행복해': '😊',
+      '즐거워': '😄',
+      '감사해': '🙏',
+      '사랑해': '❤️',
+      '뿌듯해': '😌',
+      '그저그래': '😐',
+      '화나': '😡',
+      '힘들어': '😫'
+    };
+    return map[emotion] || '';
+  }
+  /*]]>*/
+</script>
 
-    <a href="/entry/create">
-        <button>새 일기 쓰기</button>
-    </a>
 </body>
 </html>
