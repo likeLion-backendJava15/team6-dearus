@@ -13,7 +13,6 @@ import com.diary.domain.diary.entity.Diary;
 import com.diary.domain.diary.repository.DiaryRepository;
 import com.diary.domain.member.entity.DiaryMember;
 import com.diary.domain.member.entity.DiaryMember.Role;
-import com.diary.domain.member.repository.DiaryMemberRepository;
 import com.diary.domain.member.service.MemberService;
 import com.diary.global.exception.CustomException;
 
