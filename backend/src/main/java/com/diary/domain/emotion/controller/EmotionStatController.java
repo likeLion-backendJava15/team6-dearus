@@ -18,8 +18,4 @@ public class EmotionStatController {
 
     private final EmotionStatService emotionStatService;
 
-    @GetMapping("/test")
-    public List<EmotionStat> getAllStats() {
-        return emotionStatService.findAll();
-    }
 }
