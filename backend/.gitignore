@@ -4,6 +4,13 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+.metadata/
+*.log
+*.tmp
+*.bak
+*.swp
+
+
 ### STS ###
 .apt_generated
 .classpath

@@ -9,16 +9,17 @@ import com.diary.domain.entry.entity.DiaryEntry;
 import com.diary.domain.entry.repository.DiaryEntryRepository;
 import com.diary.domain.member.entity.Member;
 import com.diary.domain.member.repository.MemberRepository;
-import com.diary.domain.member.security.CustomUserDetails;
+import com.diary.global.auth.CustomUserDetails;
+import com.diary.global.exception.CustomException;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -28,35 +29,68 @@ public class CommentService {
     private final DiaryEntryRepository diaryEntryRepository;
     private final MemberRepository memberRepository;
 
-    public CommentResponse createComment(Long entryId, CommentCreateRequest request, CustomUserDetails userDetails) {
-        DiaryEntry entry = diaryEntryRepository.findById(entryId)
-                .orElseThrow(() -> new EntityNotFoundException("일기 항목을 찾을 수 없습니다."));
+    private Member getMemberOrThrow(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    }
 
-        Member member = memberRepository.findByMemberId(userDetails.getUsername())
-                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+    private DiaryEntry getEntryOrThrow(Long entryId) {
+        return diaryEntryRepository.findById(entryId)
+                .orElseThrow(() -> new CustomException("일기를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    }
+
+    public CommentResponse createComment(Long entryId, CommentCreateRequest request, CustomUserDetails userDetails) {
+        DiaryEntry entry = getEntryOrThrow(entryId);
+
+        Member member = getMemberOrThrow(request.getMemberId());
+
+        Comment parent = null;
+        if (request.getParentCommentId() != null) {
+            parent = commentRepository.findById(request.getParentCommentId())
+                    .orElseThrow(() -> new EntityNotFoundException("부모 댓글이 존재하지 않습니다."));
+        }
 
         Comment comment = Comment.builder()
                 .diaryEntry(entry)
                 .member(member)
                 .content(request.getContent())
-                .parentComment(request.getParentCommentId() != null ?
-                        commentRepository.findById(request.getParentCommentId()).orElse(null) : null)
+                .parentComment(parent)
                 .build();
 
         return CommentResponse.from(commentRepository.save(comment));
     }
 
     public List<CommentResponse> getComments(Long entryId) {
-        return commentRepository.findByDiaryEntryId(entryId).stream()
-                .map(CommentResponse::from)
-                .collect(toList());
+        List<Comment> comments = commentRepository.findByDiaryEntryId(entryId);
+
+        // 엔티티 → DTO
+        Map<Long, CommentResponse> commentMap = new HashMap<>();
+        for (Comment comment : comments) {
+            commentMap.put(comment.getId(), CommentResponse.from(comment));
+        }
+
+        // 트리 구조 생성
+        List<CommentResponse> roots = new ArrayList<>();
+        for (Comment comment : comments) {
+            CommentResponse current = commentMap.get(comment.getId());
+            if (comment.getParentComment() != null) {
+                CommentResponse parent = commentMap.get(comment.getParentComment().getId());
+                if (parent != null) {
+                    parent.getChildren().add(current);
+                }
+            } else {
+                roots.add(current);
+            }
+        }
+
+        return roots;
     }
 
     public CommentResponse updateComment(Long commentId, CommentUpdateRequest request, CustomUserDetails userDetails) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
 
-        if (!comment.getMember().getMemberId().equals(userDetails.getUsername())) {
+        if (!comment.getMember().getUserId().equals(userDetails.getUsername())) {
             throw new AccessDeniedException("댓글을 수정할 권한이 없습니다.");
         }
 
@@ -68,7 +102,7 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
 
-        if (!comment.getMember().getMemberId().equals(userDetails.getUsername())) {
+        if (!comment.getMember().getUserId().equals(userDetails.getUsername())) {
             throw new AccessDeniedException("댓글을 삭제할 권한이 없습니다.");
         }
 
