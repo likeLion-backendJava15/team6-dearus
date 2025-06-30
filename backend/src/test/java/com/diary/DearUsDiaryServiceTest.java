@@ -1,87 +1,66 @@
 package com.diary;
 
-import static org.mockito.Mockito.*;
-import static org.assertj.core.api.Assertions.*;
-
-import com.diary.domain.diary.dto.DiaryCreateRequest;
 import com.diary.domain.diary.dto.DiaryResponse;
 import com.diary.domain.diary.entity.Diary;
 import com.diary.domain.diary.repository.DiaryRepository;
 import com.diary.domain.diary.service.DiaryService;
-import com.diary.domain.member.entity.DiaryMember;
-import com.diary.domain.member.service.MemberService;
+import com.diary.global.exception.CustomException;
 
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.transaction.Transactional;
+
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 
 @SpringBootTest
+@Transactional
 public class DearUsDiaryServiceTest {
 
-    @InjectMocks
+    @Autowired
     private DiaryService diaryService;
 
-    @Mock
+    @Autowired
     private DiaryRepository diaryRepository;
 
-    @Mock
-    private MemberService memberService;
-
-    private DiaryMember mockUser;
-
-    @BeforeEach
-    void setup() {
-        MockitoAnnotations.openMocks(this);
-        mockUser = DiaryMember.builder()
-                .id(1L)
-                .userId("testUser")
-                .nickname("Tester")
-                .password("pw")
-                .build();
-    }
-
     @Test
-    void createDiary_정상_생성_및_멤버추가() {
+    void getDiaryList_정상조회() {
         // given
-        DiaryCreateRequest dto = DiaryCreateRequest.builder().name("감성일기").build();
-
-        Diary savedDiary = Diary.builder()
-                .id(100L)
-                .name("감성일기")
-                .build();
-
-        when(memberService.getCurrentUser()).thenReturn(mockUser);
-        when(diaryRepository.save(any(Diary.class))).thenReturn(savedDiary);
+        diaryRepository.save(Diary.builder().name("일기장1").build());
+        diaryRepository.save(Diary.builder().name("일기장2").build());
 
         // when
-        DiaryResponse response = diaryService.createDiary(dto);
-
-        // then
-        assertThat(response.getId()).isEqualTo(100L);
-        assertThat(response.getName()).isEqualTo("감성일기");
-
-        verify(memberService).addMemberToDiary(mockUser, savedDiary, Role.OWNER);
-    }
-
-    @Test
-    void getMyDiaries_내_일기장_조회() {
-        // given
-        when(memberService.getCurrentUser()).thenReturn(mockUser);
-
-        Diary diary1 = Diary.builder().id(1L).name("다이어리1").build();
-        Diary diary2 = Diary.builder().id(2L).name("다이어리2").build();
-
-        when(memberService.findDiariesByUser(mockUser)).thenReturn(List.of(diary1, diary2));
-
-        // when
-        List<DiaryResponse> result = diaryService.getMyDiaries();
+        List<DiaryResponse> result = diaryService.getDiaryList();
 
         // then
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).getName()).isEqualTo("다이어리1");
-        assertThat(result.get(1).getName()).isEqualTo("다이어리2");
+        assertThat(result.get(0).getName()).isEqualTo("일기장1");
+    }
+
+    @Test
+    void getDiary_정상조회() {
+        // given
+        Diary diary = diaryRepository.save(Diary.builder().name("테스트일기").build());
+
+        // when
+        DiaryResponse result = diaryService.getDiary(diary.getId());
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getName()).isEqualTo("테스트일기");
+    }
+
+    @Test
+    void getDiary_삭제된일기_예외발생() {
+        // given
+        Diary diary = diaryRepository.save(Diary.builder().name("삭제일기").deleted(true).build());
+
+        // when & then
+        assertThatThrownBy(() -> diaryService.getDiary(diary.getId()))
+                .isInstanceOf(CustomException.class)
+                .hasMessageContaining("존재하지 않거나 삭제된 일기장입니다.");
     }
 }
