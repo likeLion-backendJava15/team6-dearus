@@ -6,7 +6,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -120,7 +122,32 @@ public class EntryService {
         }
 
         diaryEntryRepository.save(entry);
+        deleteUnusedTempImages(imageUrls);
+
         return entry.getId();
+    }
+
+    private void deleteUnusedTempImages(List<String> usedUrls) {
+        File tempDir = new File(System.getProperty("user.dir") + "/temp-uploads");
+        if (!tempDir.exists()) {
+            return;
+        }
+
+        File[] files = tempDir.listFiles();
+        if (files == null) {
+            return;
+        }
+
+        Set<String> usedFilenames = usedUrls.stream()
+                .filter(url -> url.startsWith("/temp-uploads/"))
+                .map(url -> url.substring("/temp-uploads/".length()))
+                .collect(Collectors.toSet());
+
+        for (File file : files) {
+            if (!usedFilenames.contains(file.getName())) {
+                file.delete();
+            }
+        }
     }
 
     // 일기 목록 조회
@@ -185,6 +212,7 @@ public class EntryService {
 
         // 대표 이미지 처리
         String content = requestDto.getContent();
+        List<String> oldImageUrls = HtmlImageParser.extractAllImageUrls(entry.getContent());
         List<String> imageUrls = HtmlImageParser.extractAllImageUrls(content);
         String firstResolvedImageUrl = null;
 
@@ -222,6 +250,25 @@ public class EntryService {
                 resolvedImageUrl,
                 requestDto.getEmotion());
 
+        deleteUnusedTempImages(imageUrls);
+
+        Set<String> newUploadImageFilenames = imageUrls.stream()
+                .filter(url -> url.startsWith("/uploads/"))
+                .map(url -> url.substring("/uploads/".length()))
+                .collect(Collectors.toSet());
+
+        for (String url : oldImageUrls) {
+            if (url.startsWith("/uploads/")) {
+                String filename = url.substring("/uploads/".length());
+                if (!newUploadImageFilenames.contains(filename)) {
+                    File file = new File(System.getProperty("user.dir") + "/uploads/" + filename);
+                    if (file.exists()) {
+                        file.delete();
+                    }
+                }
+            }
+        }
+
         // 태그 수정
         if (requestDto.getTags() != null) {
             // 기존 태그 제거
@@ -234,6 +281,7 @@ public class EntryService {
                 entry.getTags().add(tag);
             }
         }
+
     }
 
     // 일기 삭제

@@ -9,3 +9,6 @@ HELP.md
 *.tmp
 *.bak
 *.swp
+
+*/temp-uploads/*
+*/uploads/*
