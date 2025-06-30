@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>감정 통계</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+        color: #333;
+      }
+
+      h2 {
+        margin-top: 40px;
+        color: #2d3436;
+      }
+
+      .total-bar {
+        display: flex;
+        width: 100%;
+        height: 30px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+      }
+
+      .segment {
+        height: 100%;
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>전체 감정 통계</h2>
+    <div class="total-bar" id="total-bar"></div>
+
+    <h2>유저별 감정 통계</h2>
+    <canvas id="stackedUserChart" style="width: 100%; max-width: 800px; height: 400px;"></canvas>
+
+    <h2>나의 감정 통계</h2>
+    <div style="max-width: 400px; margin-top: 20px;">
+      <canvas id="userPieChart"></canvas>
+    </div>
+
+    <script>
+      const colorMap = {
+        행복해: "#ff7675",
+        즐거워: "#fab1a0",
+        감사해: "#74b9ff",
+        사랑해: "#fd79a8",
+        뿌듯해: "#55efc4",
+        그저그래: "#dfe6e9",
+        화나: "#ffeaa7",
+        힘들어: "#a29bfe",
+      };
+
+      const diaryId = 2;
+      const userId = 3;
+
+      fetch(`/api/emotion/${diaryId}/user/${userId}/stat`)
+        .then((res) => res.json())
+        .then((data) => {
+          // 전체 감정 가로 막대
+          const totalBar = document.getElementById("total-bar");
+          data.totalcounts.forEach((stat) => {
+            const segment = document.createElement("div");
+            segment.className = "segment";
+            segment.style.width = `${stat.percent}%`;
+            segment.style.backgroundColor = colorMap[stat.emotion] || "#ccc";
+            segment.title = `${stat.emotion} (${stat.percent}%)`;
+            totalBar.appendChild(segment);
+          });
+
+          // 유저별 감정 통계 (통합 세로 스택 막대)
+          const userNicknames = data.usercounts.map(user => user.nickname);
+
+          const emotionList = [
+            "행복해", "즐거워", "감사해", "사랑해",
+            "뿌듯해", "그저그래", "화나", "힘들어"
+          ];
+
+          const emotionDatasets = emotionList.map(emotion => {
+            return {
+              label: emotion,
+              data: data.usercounts.map(user => {
+                const found = user.emotionCounts.find(e => e.emotion === emotion);
+                return found ? found.count : 0;
+              }),
+              backgroundColor: colorMap[emotion] || "#ccc",
+              stack: "emotion"
+            };
+          });
+
+          new Chart(document.getElementById("stackedUserChart"), {
+            type: "bar",
+            data: {
+              labels: userNicknames,
+              datasets: emotionDatasets
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}회`
+                  }
+                },
+                legend: {
+                  position: "top"
+                }
+              },
+              scales: {
+                x: {
+                  stacked: true
+                },
+                y: {
+                  stacked: true,
+                  beginAtZero: true,
+                  ticks: { stepSize: 1 }
+                }
+              }
+            }
+          });
+
+          // 선택 유저(나)의 감정 도넛형태
+          const pieLabels = data.selectedUserCount.emotionCounts.map((e) => e.emotion);
+          const pieCounts = data.selectedUserCount.emotionCounts.map((e) => e.count);
+          const pieColors = pieLabels.map((e) => colorMap[e] || "#ccc");
+
+          new Chart(document.getElementById("userPieChart"), {
+            type: "doughnut",
+            data: {
+              labels: pieLabels,
+              datasets: [{
+                data: pieCounts,
+                backgroundColor: pieColors,
+              }],
+            },
+            options: {
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) => `${ctx.label}: ${ctx.parsed}회`
+                  }
+                },
+                legend: {
+                  position: 'bottom'
+                }
+              }
+            }
+          });
+        });
+    </script>
+  </body>
+</html>
