@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.io.IOException;
 
-
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,26 +66,39 @@ public class EntryService {
         Diary diary = getDiaryOrThrow(requestDTO.getDiaryId());
 
         String content = requestDTO.getContent();
-
-        // 대표 이미지 추출
-        String resolvedImageUrl = requestDTO.getImageUrl();
-        if (resolvedImageUrl == null || resolvedImageUrl.isBlank()) {
-            resolvedImageUrl = HtmlImageParser.extractFirstImageUrl(content);
-        }
-
         // 이미지 URL 파싱 및 이동
         List<String> imageUrls = HtmlImageParser.extractAllImageUrls(content);
+        String firstResolvedImageUrl = null;
+
         for (String url : imageUrls) {
             if (url.startsWith("/temp-uploads/")) {
                 String filename = url.substring("/temp-uploads/".length());
+
                 Path source = Paths.get(System.getProperty("user.dir") + "/temp-uploads/" + filename);
                 Path target = Paths.get(System.getProperty("user.dir") + "/uploads/" + filename);
+
+                System.out.println("tempPath 존재 여부: " + Files.exists(source));
+                System.out.println("tempPath 절대 경로: " + source.toAbsolutePath());
+
                 Files.createDirectories(target.getParent());
                 Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
 
+                String newUrl = "/uploads/" + filename;
                 content = content.replace(url, "/uploads/" + filename);
+
+                if (firstResolvedImageUrl == null) {
+                    firstResolvedImageUrl = newUrl;
+                }
+            } else {
+                // ✅ 업로드된 이미지가 아닌 외부 이미지 등도 처리 가능
+                if (firstResolvedImageUrl == null) {
+                    firstResolvedImageUrl = url;
+                }
             }
         }
+
+        // 대표 이미지 URL 결정
+        String resolvedImageUrl = firstResolvedImageUrl;
 
         // 엔트리 생성
         DiaryEntry entry = DiaryEntry.builder()
@@ -115,16 +127,24 @@ public class EntryService {
     public List<EntryListResponseDTO> getAllEntriesByDiaryId(Long diaryId) {
 
         List<DiaryEntry> entries = diaryEntryRepository.findByDiaryIdOrderByCreatedAtDesc(diaryId);
+
         return entries.stream()
                 .map(entry -> {
+                    List<String> tagNames = entry.getTags().stream()
+                            .map(tag -> tag.getName())
+                            .collect(Collectors.toList());
+
                     return EntryListResponseDTO.builder()
                             .id(entry.getId())
+                            .diaryId(entry.getDiary().getId())
+                            .authorId(entry.getAuthor().getId())
                             .title(entry.getTitle())
                             .emotion(entry.getEmotion())
                             .imageUrl(entry.getImageUrl())
                             .authorNickname(entry.getAuthor().getNickname())
                             .createdAt(entry.getCreatedAt())
                             .emotionEmoji(EmotionUtils.toEmoji(entry.getEmotion()))
+                            .tags(tagNames)
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -134,6 +154,10 @@ public class EntryService {
     @Transactional(readOnly = true)
     public EntryResponseDTO getEntryDetail(Long entryId) {
         DiaryEntry entry = getEntryOrThrow(entryId);
+
+        List<String> tagNames = entry.getTags().stream()
+                .map(Tag::getName)
+                .collect(Collectors.toList());
 
         return EntryResponseDTO.builder()
                 .id(entry.getId())
@@ -147,6 +171,7 @@ public class EntryService {
                 .createdAt(entry.getCreatedAt())
                 .updatedAt(entry.getUpdatedAt())
                 .emotionEmoji(EmotionUtils.toEmoji(entry.getEmotion()))
+                .tags(tagNames)
                 .build();
     }
 
@@ -158,10 +183,43 @@ public class EntryService {
             throw new CustomException("작성자가 아니므로 수정 불가", HttpStatus.FORBIDDEN);
         }
 
+        // 대표 이미지 처리
+        String content = requestDto.getContent();
+        List<String> imageUrls = HtmlImageParser.extractAllImageUrls(content);
+        String firstResolvedImageUrl = null;
+
+        for (String url : imageUrls) {
+            if (url.startsWith("/temp-uploads/")) {
+                String filename = url.substring("/temp-uploads/".length());
+                Path source = Paths.get(System.getProperty("user.dir") + "/temp-uploads/" + filename);
+                Path target = Paths.get(System.getProperty("user.dir") + "/uploads/" + filename);
+
+                try {
+                    Files.createDirectories(target.getParent());
+                    Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                content = content.replace(url, "/uploads/" + filename);
+
+                if (firstResolvedImageUrl == null) {
+                    firstResolvedImageUrl = "/uploads/" + filename;
+                }
+            } else {
+                if (firstResolvedImageUrl == null) {
+                    firstResolvedImageUrl = url;
+                }
+            }
+        }
+
+        String resolvedImageUrl = (requestDto.getImageUrl() != null && !requestDto.getImageUrl().isBlank())
+                ? requestDto.getImageUrl()
+                : firstResolvedImageUrl;
+
         entry.update(
                 requestDto.getTitle(),
-                requestDto.getContent(),
-                requestDto.getImageUrl(),
+                content,
+                resolvedImageUrl,
                 requestDto.getEmotion());
 
         // 태그 수정

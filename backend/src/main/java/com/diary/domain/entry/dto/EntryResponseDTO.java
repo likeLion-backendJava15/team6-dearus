@@ -1,7 +1,7 @@
 package com.diary.domain.entry.dto;
 
 import java.time.LocalDateTime;
-
+import java.util.List;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -20,5 +20,6 @@ public class EntryResponseDTO { // 상세 조회
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String emotionEmoji;
+    private List<String> tags;
 }
 

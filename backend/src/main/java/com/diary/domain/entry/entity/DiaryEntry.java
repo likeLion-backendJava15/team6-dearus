@@ -61,6 +61,7 @@ public class DiaryEntry {
     private LocalDateTime updatedAt;
     
     // 태그
+    @Builder.Default
     @ManyToMany
     @JoinTable(
             name = "Entry_Tag",

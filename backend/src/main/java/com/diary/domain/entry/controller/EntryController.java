@@ -21,6 +21,7 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -67,8 +68,9 @@ public class EntryController {
 
     // 일기 상세 조회
     @GetMapping("/entry/{entryId}")
-    public ResponseEntity<EntryResponseDTO> getEntry (@PathVariable Long entryId) {
+    public ResponseEntity<EntryResponseDTO> getEntry (@PathVariable Long entryId, Model model) {
         EntryResponseDTO dto = entryService.getEntryDetail(entryId);
+        model.addAttribute("entry", dto);
         return ResponseEntity.ok(dto);
     }
     

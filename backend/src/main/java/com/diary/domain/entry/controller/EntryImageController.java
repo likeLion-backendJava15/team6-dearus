@@ -30,7 +30,7 @@ public class EntryImageController {
             // 파일명 생성 (UUID + 원래 이름)
             String originalFilename = imageFile.getOriginalFilename();
             String filename = UUID.randomUUID() + "_" + originalFilename;
-            String tempDir = System.getProperty("user.dir") + "/src/main/resources/static/temp-uploads/";
+            String tempDir = System.getProperty("user.dir") + "/temp-uploads/";
 
             // 저장 경로
             File file = new File(tempDir + filename);

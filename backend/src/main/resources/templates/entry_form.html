@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
-    <title>일기 작성</title>
+    <title th:text="${editMode} ? '일기 수정' : '일기 작성'">일기 작성</title>
 
     <!-- Toast UI Editor CDN -->
     <link
@@ -20,82 +20,197 @@
       button {
         display: block;
         margin-bottom: 15px;
+        margin-top: 10px;
         width: 100%;
         padding: 10px;
         font-size: 16px;
       }
+
+      #editor {
+        margin-bottom: 20px;
+      }
+
+      .tag-item {
+        background-color: #e0f3f1;
+        padding: 6px 10px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      .tag-item span {
+        display: inline;
+      }
+
+      .tag-item button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #888;
+        font-size: 16px;
+        line-height: 1;
+        font-weight: bold;
+        padding-right: 3px;
+        margin: 0%;
+      }
     </style>
   </head>
   <body>
-    <h2>일기 작성</h2>
+    <h2 th:text="${editMode} ? '일기 수정' : '일기 작성'">일기 작성</h2>
+
     <input type="hidden" id="diaryId" th:value="${diaryId}" />
+    <input
+      type="hidden"
+      id="entryId"
+      th:if="${editMode}"
+      th:value="${entry.id}"
+    />
 
-    <!-- 제목 입력 -->
-    <input type="text" id="title" placeholder="제목을 입력하세요" />
+    <!-- 제목 -->
+    <input
+      type="text"
+      id="title"
+      placeholder="제목을 입력하세요"
+      th:value="${editMode} ? ${entry.title} : ''"
+    />
 
-    <!-- 감정 선택 -->
-    <select id="emotion">
-      <option value="행복해">행복해</option>
-      <option value="즐거워">즐거워</option>
-      <option value="감사해">감사해</option>
-      <option value="사랑해">사랑해</option>
-      <option value="뿌듯해">뿌듯해</option>
-      <option value="그저그래">그저그래</option>
-      <option value="화나">화나</option>
-      <option value="힘들어">힘들어</option>
+    <!-- 감정 -->
+    <label for="emotion">감정</label>
+    <select id="emotion" name="emotion">
+      <option
+        th:each="emotion : ${emotions}"
+        th:value="${emotion.name()}"
+        th:text="|${emotion.emoji} ${emotion.name()}|"
+        th:selected="${editMode} ? ${emotion.name()} == ${entry.emotion} : false"
+      ></option>
     </select>
 
     <!-- Toast UI Editor -->
     <div id="editor"></div>
 
+    <!-- 태그 입력 -->
+    <label for="tag-input">태그</label>
+    <input type="text" id="tag-input" placeholder="태그 입력 후 Enter" />
+    <div
+      id="tag-container"
+      style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px"
+    ></div>
+
     <!-- 저장 버튼 -->
     <button type="button" onclick="submitEntry()">저장</button>
 
+    <!-- 데이터 주입 -->
+    <script th:inline="javascript">
+      const isEdit = /*[[${editMode}]]*/ false;
+      const entryId = /*[[${entry != null} ? ${entry.id} : 0]]*/ 0;
+    </script>
+
+    <div
+      th:if="${editMode}"
+      id="entry-data"
+      th:data-content="${entry.content}"
+      th:data-tags="${entryTagsJson}"
+    ></div>
+
     <script>
+      const entryDataDiv = document.getElementById("entry-data");
+
+      // content는 문자열 그대로 사용
+      const initialContent = entryDataDiv?.dataset?.content || "";
+
+      // tags는 JSON 파싱
+      let initialTags = [];
+      try {
+        initialTags = JSON.parse(entryDataDiv?.dataset?.tags || "[]");
+      } catch (e) {
+        console.warn("태그 JSON 파싱 실패", e);
+      }
+
       const editor = new toastui.Editor({
         el: document.querySelector("#editor"),
         height: "500px",
         initialEditType: "wysiwyg",
         previewStyle: "vertical",
+        initialValue: initialContent,
         hooks: {
-          async addImageBlobHook(blob, callback) {
+          addImageBlobHook: (blob, callback) => {
             const formData = new FormData();
             formData.append("image", blob);
-
-            const response = await fetch("/image/upload", {
+            fetch("/image/upload", {
               method: "POST",
               body: formData,
-            });
-
-            const data = await response.json();
-
-            const imageUrl = data.url;
-            const editorInstance = editor.getCurrentModeEditor();
-            editor.getCurrentModeEditor().insertHTML(`
-        <p>
-          <br class="ProseMirror-trailingBreak">
-        </p>
-      `);
-            editor.getCurrentModeEditor().insertHTML(`
-        <p><img src="${imageUrl}" alt="업로드 이미지" /></p>
-      `);
-            editor.getCurrentModeEditor().insertHTML(`
-        <p>
-          <br class="ProseMirror-trailingBreak">
-        </p>
-      `);
-
-            callback(imageUrl, "업로드된 이미지");
+            })
+              .then((res) => res.json())
+              .then((data) => callback(data.url, "업로드 이미지"))
+              .catch(() => alert("이미지 업로드 실패"));
           },
         },
       });
 
-      function submitEntry() {
-        const content = editor.getHTML();
-        const title = document.getElementById("title").value;
-        const emotion = document.getElementById("emotion").value;
-        const diaryId = document.getElementById("diaryId").value;
+      // 초기화
+      window.addEventListener("DOMContentLoaded", () => {
+        if (isEdit && initialContent) {
+          tags.push(...(initialTags || []));
+          renderTags();
+        }
+      });
 
+      // 태그
+      const tags = [];
+      document
+        .getElementById("tag-input")
+        .addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            const value = e.target.value.trim();
+            if (value && !tags.includes(value)) {
+              tags.push(value);
+              renderTags();
+              e.target.value = "";
+            }
+          }
+        });
+
+      function renderTags() {
+        const container = document.getElementById("tag-container");
+        container.innerHTML = "";
+        tags.forEach((tag) => {
+          const tagEl = document.createElement("div");
+          tagEl.className = "tag-item";
+
+          const label = document.createElement("span");
+          label.textContent = tag;
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.innerHTML = "&times;";
+          deleteBtn.onclick = () => {
+            const index = tags.indexOf(tag);
+            if (index !== -1) {
+              tags.splice(index, 1);
+              renderTags();
+            }
+          };
+
+          tagEl.appendChild(label);
+          tagEl.appendChild(deleteBtn);
+          container.appendChild(tagEl);
+        });
+      }
+
+      function submitEntry() {
+        event.preventDefault();
+        const title = document.getElementById("title").value.trim();
+        const emotion = document.getElementById("emotion").value;
+        const diaryId = parseInt(document.getElementById("diaryId").value);
+
+        if (!title) {
+          alert("제목을 입력해주세요.");
+          document.getElementById("title").focus();
+          return;
+        }
         if (!diaryId) {
           alert("일기장 ID가 없습니다.");
           return;
@@ -103,13 +218,18 @@
 
         const data = {
           title: title,
-          content: content,
+          content: editor.getHTML(),
           emotion: emotion,
-          diaryId: parseInt(diaryId),
+          diaryId: diaryId,
+          imageUrl: null, // 대표 이미지 따로 지정 안했으면 null
+          tags: tags,
         };
 
-        fetch("/entry", {
-          method: "POST",
+        const method = isEdit ? "PUT" : "POST";
+        const url = isEdit ? `/api/entry/${entryId}` : "/api/entry";
+
+        fetch(url, {
+          method: method,
           headers: {
             "Content-Type": "application/json",
           },
@@ -120,8 +240,8 @@
             return res.json();
           })
           .then(() => {
-            alert("작성 완료!");
-            location.href = "/diary";
+            alert("저장 완료!");
+            location.href = `/entry/list?diaryId=${diaryId}`;
           })
           .catch((err) => {
             alert("저장 실패: " + err.message);
