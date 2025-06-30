@@ -1,7 +1,13 @@
 package com.diary.domain.entry.service;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.io.IOException;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,6 +26,7 @@ import com.diary.domain.member.repository.MemberRepository;
 import com.diary.domain.tag.entity.Tag;
 import com.diary.domain.tag.repository.TagRepository;
 import com.diary.global.exception.CustomException;
+import com.diary.global.util.EmotionUtils;
 import com.diary.global.util.HtmlImageParser;
 
 @Service
@@ -55,25 +62,43 @@ public class EntryService {
     }
 
     // 일기 등록
-    public Long createEntry(EntryCreateRequestDTO requestDTO, Long authorId) {
+    public Long createEntry(EntryCreateRequestDTO requestDTO, Long authorId) throws IOException {
         Member author = getMemberOrThrow(authorId);
         Diary diary = getDiaryOrThrow(requestDTO.getDiaryId());
 
-        // 대표 이미지가 비어 있으면 content에서 자동 추출
+        String content = requestDTO.getContent();
+
+        // 대표 이미지 추출
         String resolvedImageUrl = requestDTO.getImageUrl();
         if (resolvedImageUrl == null || resolvedImageUrl.isBlank()) {
-            resolvedImageUrl = HtmlImageParser.extractFirstImageUrl(requestDTO.getContent());
+            resolvedImageUrl = HtmlImageParser.extractFirstImageUrl(content);
         }
 
+        // 이미지 URL 파싱 및 이동
+        List<String> imageUrls = HtmlImageParser.extractAllImageUrls(content);
+        for (String url : imageUrls) {
+            if (url.startsWith("/temp-uploads/")) {
+                String filename = url.substring("/temp-uploads/".length());
+                Path source = Paths.get(System.getProperty("user.dir") + "/temp-uploads/" + filename);
+                Path target = Paths.get(System.getProperty("user.dir") + "/uploads/" + filename);
+                Files.createDirectories(target.getParent());
+                Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+
+                content = content.replace(url, "/uploads/" + filename);
+            }
+        }
+
+        // 엔트리 생성
         DiaryEntry entry = DiaryEntry.builder()
                 .diary(diary)
                 .author(author)
                 .title(requestDTO.getTitle())
-                .content(requestDTO.getContent())
+                .content(content) // ✅ 수정된 content 사용
                 .imageUrl(resolvedImageUrl)
                 .emotion(requestDTO.getEmotion())
                 .build();
 
+        // 태그 처리
         if (requestDTO.getTags() != null) {
             for (String tagName : requestDTO.getTags()) {
                 Tag tag = tagRepository.findByName(tagName)
@@ -83,22 +108,25 @@ public class EntryService {
         }
 
         diaryEntryRepository.save(entry);
-
         return entry.getId();
     }
 
     // 일기 목록 조회
     public List<EntryListResponseDTO> getAllEntriesByDiaryId(Long diaryId) {
+
         List<DiaryEntry> entries = diaryEntryRepository.findByDiaryIdOrderByCreatedAtDesc(diaryId);
         return entries.stream()
-                .map((DiaryEntry entry) -> EntryListResponseDTO.builder()
-                        .id(entry.getId())
-                        .title(entry.getTitle())
-                        .emotion(entry.getEmotion())
-                        .imageUrl(entry.getImageUrl())
-                        .authorNickname(entry.getAuthor().getNickname())
-                        .createdAt(entry.getCreatedAt())
-                        .build())
+                .map(entry -> {
+                    return EntryListResponseDTO.builder()
+                            .id(entry.getId())
+                            .title(entry.getTitle())
+                            .emotion(entry.getEmotion())
+                            .imageUrl(entry.getImageUrl())
+                            .authorNickname(entry.getAuthor().getNickname())
+                            .createdAt(entry.getCreatedAt())
+                            .emotionEmoji(EmotionUtils.toEmoji(entry.getEmotion()))
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 
@@ -118,6 +146,7 @@ public class EntryService {
                 .imageUrl(entry.getImageUrl())
                 .createdAt(entry.getCreatedAt())
                 .updatedAt(entry.getUpdatedAt())
+                .emotionEmoji(EmotionUtils.toEmoji(entry.getEmotion()))
                 .build();
     }
 

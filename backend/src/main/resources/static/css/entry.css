@@ -1,0 +1,42 @@
+/* 대표 이미지 */
+.entry-image {
+  width: 40vh;
+  max-width: 50vh;
+  height: auto;
+  display: block;
+  margin: 0 auto 20px auto;
+  border-radius: 12px;
+}
+
+/* 본문 콘텐츠 내 이미지 */
+.entry-content img {
+  max-width: 40vh;
+  width: 50vh;
+  height: auto;
+  display: block;
+  margin: 1em 0;
+  border-radius: 8px;
+}
+
+/* 기본 마진/폰트 */
+body {
+  padding: 20px;
+  font-family: sans-serif;
+}
+
+.entry-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.entry-meta {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.entry-content {
+  border-top: 1px solid #ccc;
+  padding-top: 20px;
+}

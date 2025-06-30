@@ -19,4 +19,6 @@ public class EntryResponseDTO { // 상세 조회
     private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String emotionEmoji;
 }
+

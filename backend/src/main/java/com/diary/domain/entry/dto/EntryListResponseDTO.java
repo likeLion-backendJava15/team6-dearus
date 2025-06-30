@@ -16,4 +16,5 @@ public class EntryListResponseDTO { // 목록 조회
     private String imageUrl;
     private String authorNickname;
     private LocalDateTime createdAt;
+    private String emotionEmoji;
 }

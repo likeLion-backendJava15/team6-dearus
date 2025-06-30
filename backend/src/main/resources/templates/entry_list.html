@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <title>일기 목록</title>
-  <style>
+  <link rel="stylesheet" th:href="@{/css/entry.css}" />
+  <!-- <style>
     body { padding: 20px; font-family: sans-serif; }
     .entry-list { list-style: none; padding: 0; }
     .entry-item { border-bottom: 1px solid #ddd; padding: 10px 0; }
     .entry-title { font-weight: bold; font-size: 18px; margin-bottom: 5px; color: blue; text-decoration: underline; cursor: pointer; }
     .entry-meta { font-size: 14px; color: #666; }
     .write-btn { margin-top: 20px; }
-  </style>
+  </style> -->
 </head>
 <body>
 
@@ -24,7 +25,7 @@
 
     <!-- 메타 정보: 감정, 작성자, 날짜 -->
     <div class="entry-meta">
-      <span th:utext="${#strings.arrayJoin({'감정: ', getEmotionEmoji(entry.emotion)}, '')}"></span> |
+      <span th:text="'감정: ' + ${entry.emotionEmoji}"></span>
       <span th:text="'작성자: ' + ${entry.authorNickname}">작성자</span> |
       <span th:text="${#temporals.format(entry.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span>
     </div>

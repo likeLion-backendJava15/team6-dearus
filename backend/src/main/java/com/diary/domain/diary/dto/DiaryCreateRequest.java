@@ -7,7 +7,6 @@ import lombok.*;
 @NoArgsConstructor 
 @AllArgsConstructor
 @Builder
-//일기장 생성 요청 처리
-public class DiaryCreateRequest {
+public class DiaryCreateRequest { //일기장 생성 요청 처리
     private String name;
 }

@@ -26,11 +26,15 @@ public class DiaryService {
     private final DiaryRepository diaryRepository;
     private final MemberService memberService;
 
+    // public DiaryService (DiaryRepository diaryRepository, MemberService memberService) {
+    //     this.diaryRepository = diaryRepository;
+    //     this.memberService = memberService;
+    // }
+
     // 일기장 생성 구현 <완료>
     public DiaryResponse createDiary(DiaryCreateRequest dto) {
-        //DiaryMember currentMember = memberService.getCurrentUser();   //(멤버 유저 엔티티 가정)
+        // DiaryMember currentMember = memberService.getCurrentUser();   //(멤버 유저 엔티티 가정)
 
-        
         if (dto.getName() == null || dto.getName().trim().isEmpty()) {      // 이름이 null이거나 공백일 경우 예외
             throw new CustomException("일기장 이름은 비어 있을 수 없습니다.", HttpStatus.BAD_REQUEST);
         }

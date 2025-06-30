@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${entry.title}">일기 상세</title>
+  <link rel="stylesheet" th:href="@{/css/entry.css}" />
+  <style>
+    body { padding: 20px; font-family: sans-serif; }
+    .entry-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+    .entry-meta { font-size: 14px; color: #666; margin-bottom: 20px; }
+    .entry-content { border-top: 1px solid #ccc; padding-top: 20px; }
+    .entry-image { max-width: 100%; height: auto; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+  <div class="entry-title" th:text="${entry.title}">제목</div>
+
+  <div class="entry-meta">
+    <span th:text="'작성자: ' + ${entry.authorNickname}"></span> |
+    <span th:text="'감정: ' + ${entry.emotionEmoji}"></span> |
+    <span th:text="${#temporals.format(entry.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span>
+  </div>
+
+  <!-- 대표 이미지 -->
+  <div th:if="${entry.imageUrl != null}">
+    <img th:src="@{${entry.imageUrl}}" alt="대표 이미지" class="entry-image"/>
+  </div>
+
+  <!-- HTML 본문 (Toast UI Editor로 작성된 content) -->
+  <div class="entry-content" th:utext="${entry.content}"></div>
+
+</body>
+</html>
