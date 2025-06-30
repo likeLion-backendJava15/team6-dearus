@@ -14,9 +14,9 @@ import com.diary.global.auth.CustomUserDetails;
 import com.diary.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -96,17 +96,9 @@ public class MemberInviteService {
         diaryMemberRepository.delete(diaryMember);
     }
 
-
-
     private Long getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new CustomException("인증된 사용자가 없습니다.", HttpStatus.UNAUTHORIZED);
-        }
-
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        return userDetails.getId(); // 또는 userDetails.getMember().getId();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        return userDetails.getMember().getId();
     }
-
 }
