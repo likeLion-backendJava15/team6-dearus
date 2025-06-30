@@ -25,8 +25,11 @@ public class Diary {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "is_deleted")
-    private boolean deleted = false;
+    @Column(nullable = false)
+    private Long ownerId;  // Member 엔티티 대신 FK ID만 저장
+    
+    @Column(nullable = false)
+    private Boolean isDeleted = false; // Soft-Delete
 
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryEntry> entries = new ArrayList<>();
