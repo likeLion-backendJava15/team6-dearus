@@ -51,27 +51,32 @@ public class SecurityConfig {
             HttpServletResponse response,
             Authentication auth
     ) throws IOException {
-        // 1) 유저 정보
         CustomUserDetails user = (CustomUserDetails) auth.getPrincipal();
         Long userId = user.getId();
 
-        // 2) 첫 번째 일기장 ID 조회
+        // 사용자의 다이어리 리스트 조회
         List<Diary> diaries = diaryRepository.findAllByOwnerIdAndIsDeletedFalse(userId);
-        String target = diaries.isEmpty()
-                ? "/entry/list"              // 비어 있어도 entry_list 뷰 호출
-                : "/entry/list?diaryId=" + diaries.get(0).getId();
 
-        // 3) AJAX 여부 검사
+        // 리다이렉트할 URI 결정
+        String target;
+        if (diaries.isEmpty()) {
+            // 다이어리가 하나도 없으면, 다이어리 생성 전용 뷰로
+            // (원하시면 /welcome 으로 보낼 수도 있고, 바로 /diary 로 보내서 빈 목록 보여줘도 됩니다)
+            target = "/diary";
+        } else {
+            // 이미 다이어리가 있으면, 첫 번째 일기장 클릭 시 진입하는 엔트리 리스트 뷰로
+            // 우리가 새로 만든 뷰 전용 엔드포인트
+            target = "/diary/" + diaries.get(0).getId() + "/entries";
+        }
+
         boolean isAjax = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
         if (isAjax) {
-            // JSON으로 내려줌
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             objectMapper.writeValue(
                     response.getWriter(),
                     Map.of("redirectUri", target)
             );
         } else {
-            // 비-AJAX 이면 브라우저가 302를 따라가게
             response.sendRedirect(target);
         }
     }
