@@ -31,3 +31,6 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.type: trace # 바인딩 파라미터까지 확인 가능 (실무에선 trace는 끄는 편)
+
+server:
+  port: 9000

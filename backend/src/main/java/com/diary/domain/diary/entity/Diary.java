@@ -25,13 +25,19 @@ public class Diary {
 
     @Column(nullable = false)
     private String name;
+
+    // @Column(nullable = false)
+    // private Long ownerId;  // Member 엔티티 대신 FK ID만 저장
     
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isDeleted = false; // Soft-Delete
 
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<DiaryEntry> entries = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "diary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryMember> members = new ArrayList<>();
 

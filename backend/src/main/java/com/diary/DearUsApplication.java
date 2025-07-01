@@ -4,10 +4,14 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.diary.domain.diary.entity.Diary;
 import com.diary.domain.diary.repository.DiaryRepository;
+import com.diary.domain.member.repository.DiaryMemberRepository;
+import com.diary.domain.member.entity.DiaryMember;
+import com.diary.domain.member.entity.DiaryMemberId;
 import com.diary.domain.member.entity.Member;
 import com.diary.domain.member.repository.MemberRepository;
 
@@ -15,6 +19,7 @@ import com.diary.domain.member.repository.MemberRepository;
 public class DearUsApplication {
 
     @Bean
+    @Order(1)
     public CommandLineRunner initTestUser(MemberRepository memberRepository, PasswordEncoder passwordEncoder) {
         return args -> {
             if (memberRepository.findByUserId("testuser").isEmpty()) {
@@ -22,14 +27,18 @@ public class DearUsApplication {
                 member.setUserId("testuser");
                 member.setNickname("테스트유저");
                 member.setPassword(passwordEncoder.encode("testpass"));
-                member.setEmail("123@naver.com");
                 memberRepository.save(member);
             }
         };
     }
 
     @Bean
-    public CommandLineRunner initTestDiary(DiaryRepository diaryRepository, MemberRepository memberRepository) {
+    @Order(2)
+    public CommandLineRunner initTestDiary(
+            DiaryRepository diaryRepository,
+            MemberRepository memberRepository,
+            DiaryMemberRepository diaryMemberRepository) {
+
         return args -> {
             if (diaryRepository.findAll().isEmpty()) {
                 Member owner = memberRepository.findById(1L)
@@ -38,7 +47,7 @@ public class DearUsApplication {
                 diary.setName("테스트일기장");
                 diary.setOwner(owner);
                 diaryRepository.save(diary);
-                System.out.println("테스트용 일기장 생성 완료!");
+                System.out.println("✅ 테스트용 일기장 생성 완료!");
             }
         };
     }

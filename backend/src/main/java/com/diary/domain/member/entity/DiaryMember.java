@@ -30,13 +30,16 @@ public class DiaryMember {
     private Member member;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     @Column(nullable = false)
     private Role role = Role.GUEST;
 
     @Column(name = "invited_at")
+    @Builder.Default
     private LocalDateTime invitedAt = LocalDateTime.now();
 
     @Column(name = "accepted")
+    @Builder.Default
     private boolean accepted = false;
 
     public enum Role {
