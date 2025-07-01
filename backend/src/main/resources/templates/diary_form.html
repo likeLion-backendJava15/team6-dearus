@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title th:text="${editMode} ? '일기장 수정' : '새 일기장 생성'">
+      일기장
+    </title>
+    <link rel="stylesheet" th:href="@{/css/common.css}" />
+    <style>
+      body {
+        padding: 20px;
+        font-family: sans-serif;
+      }
+
+      input {
+        padding: 10px;
+        font-size: 16px;
+        width: 300px;
+      }
+
+      button {
+        margin-top: 10px;
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+        background-color: #e4e4e4;
+        border-radius: 8px;
+        border: none;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h2
+      th:text="${editMode} ? '✏️ 일기장 이름 수정' : '📚 새 일기장 생성'"
+    ></h2>
+
+    <!-- 입력창 -->
+    <input
+      type="text"
+      id="diaryName"
+      name="name"
+      th:value="${diary.name}"
+      placeholder="일기장 이름을 입력하세요"
+      required
+    />
+
+    <!-- 버튼 (JS에서 처리) -->
+    <div>
+      <button
+        type="button"
+        id="submitBtn"
+        th:text="${editMode} ? '수정' : '생성'"
+      ></button>
+    </div>
+
+    <br />
+    <a th:href="@{/diary}"><button>← 목록으로</button></a>
+
+    <!-- JS로 POST or PUT 요청 처리 -->
+    <script th:inline="javascript">
+      const editMode = [[${editMode}]];
+      const diaryId = [[${diaryId}]];
+      const submitBtn = document.getElementById("submitBtn");
+
+      submitBtn.addEventListener("click", () => {
+        const name = document.getElementById("diaryName").value.trim();
+        if (!name) {
+          alert("이름을 입력해주세요.");
+          return;
+        }
+
+        const url = editMode ? `/api/diary/${diaryId}` : `/api/diary`;
+        const method = editMode ? "PUT" : "POST";
+
+        fetch(url, {
+          method: method,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name }),
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error("요청 실패");
+            return res.json();
+          })
+          .then((data) => {
+            alert(editMode ? "수정 완료" : "생성 완료");
+            location.href = "/diary";
+          })
+          .catch((err) => alert(err.message));
+      });
+    </script>
+  </body>
+</html>

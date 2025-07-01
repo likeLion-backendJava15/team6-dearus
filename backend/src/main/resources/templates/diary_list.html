@@ -1,16 +1,107 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>다이어리 목록</title>
-</head>
-<body>
-    <h2>내 다이어리</h2>
+  <head>
+    <meta charset="UTF-8" />
+    <title>내 일기장</title>
+    <link rel="stylesheet" th:href="@{/css/entry.css}" />
+    <style>
+      body {
+        padding: 20px;
+        font-family: sans-serif;
+      }
 
-    <ul>
-        <li th:each="diary : ${diaries}">
-            <strong th:text="${diary.name}">다이어리 이름</strong>
-        </li>
+      .diary-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      .diary-item {
+        border-bottom: 1px solid #ddd;
+        padding: 10px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .diary-name {
+        font-weight: bold;
+        font-size: 18px;
+        color: blue;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .button-container {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .btn {
+        padding: 7px 10px;
+        font-size: 13px;
+        cursor: pointer;
+        border-radius: 10px;
+        background-color: #e4e4e4;
+        color: rgb(33, 49, 38);
+        font-weight: bold;
+        text-decoration: none;
+        display: inline-block;
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>📚 내 일기장</h2>
+
+    <div class="button-container">
+      <a th:href="@{/diary/form}" class="btn">+ 새 일기장 만들기</a>
+    </div>
+
+    <hr style="background-color: #cccccc; height: 1px; border: 0" />
+
+    <ul class="diary-list">
+      <li th:each="diary : ${diaries}" class="diary-item">
+        <!-- 왼쪽: 이름 -->
+        <a
+          th:href="@{'/entry/list'(diaryId=${diary.id})}"
+          class="diary-name"
+          th:text="${diary.name}"
+        ></a>
+
+        <!-- 오른쪽: 수정/삭제 -->
+        <div style="display: flex; gap: 10px">
+          <a th:href="@{/diary/form(editId=${diary.id})}" class="btn"
+            >✏️ 수정</a
+          >
+          <button
+            type="button"
+            class="btn"
+            th:onclick="|deleteDiary(${diary.id})|"
+          >
+            🗑️ 삭제
+          </button>
+        </div>
+      </li>
     </ul>
-</body>
+
+    <script>
+      function deleteDiary(diaryId) {
+        if (!confirm("정말 삭제하시겠습니까?")) return;
+
+        fetch(`/api/diary/${diaryId}`, {
+          method: "DELETE",
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error("삭제 실패");
+            return res.status === 204 ? null : res.json(); // ✅ 204면 JSON 파싱 안함
+          })
+          .then(() => {
+            alert("삭제 완료");
+            location.reload();
+          })
+          .catch((err) => alert(err.message));
+      }
+    </script>
+  </body>
 </html>

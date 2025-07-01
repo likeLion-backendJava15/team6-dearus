@@ -59,7 +59,7 @@ public class DiaryEntry {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-    
+
     // 태그
     @Builder.Default
     @ManyToMany
@@ -74,10 +74,10 @@ public class DiaryEntry {
     public Set<Tag> getTags() {
         return tags;
     }
+
     public void setTags(Set<Tag> tags) {
         this.tags = tags;
     }
-  
 
     @PrePersist
     protected void onCreate() {

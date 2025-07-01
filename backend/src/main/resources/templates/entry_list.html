@@ -52,14 +52,22 @@
         color: rgb(33, 49, 38);
         font-weight: bold;
       }
+
+      .button-container {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
     </style>
   </head>
   <body>
     <h2 th:text="'📘 ' + ${diaryName}">일기 목록</h2>
-    <!-- 글쓰기 버튼 -->
-    <div class="write-btn">
+    <div class="button-container">
       <a th:href="@{'/entry/form'(diaryId=${diaryId})}">
-        <button>✍️ 글쓰기</button>
+        <button>✍️ 글쓰기</button> </a
+      ><!--
+  --><a th:href="@{'/diary'}">
+        <button>📚 일기장 목록으로</button>
       </a>
     </div>
 

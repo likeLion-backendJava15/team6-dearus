@@ -62,17 +62,14 @@
 //         assertThat(response.getOwnerId()).isEqualTo(memberId);
 //     }
 
-//     @Test
-//     void 다이어리_목록조회_성공() {
-//         Member owner = memberRepository.findById(memberId)
-//                 .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
-//         // Given: 다이어리 직접 저장
-//         Diary diary = Diary.builder()
-//                 .name("목록용 다이어리")
-//                 .owner(owner)
-//                 .isDeleted(false)
-//                 .build();
-//         diaryRepository.save(diary);
+    // @Test
+    // void 다이어리_목록조회_성공() {
+    //     // Given: 다이어리 직접 저장
+    //     Diary diary = Diary.builder()
+    //             .name("목록용 다이어리")
+    //             .isDeleted(false)
+    //             .build();
+    //     diaryRepository.save(diary);
 
 //         // When
 //         List<DiaryResponse> list = diaryService.getDiaryList(memberId);
