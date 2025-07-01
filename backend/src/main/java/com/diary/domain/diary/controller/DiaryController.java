@@ -63,9 +63,8 @@ public class DiaryController {
 
     // 다이어리 삭제
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDiary(@PathVariable Long id,
-                                            @RequestParam Long memberId) {
-        diaryService.deleteDiary(id, memberId);
+    public ResponseEntity<Void> deleteDiary(@PathVariable Long id) {
+        diaryService.deleteDiary(id);
         return ResponseEntity.noContent().build();
     }
 }
