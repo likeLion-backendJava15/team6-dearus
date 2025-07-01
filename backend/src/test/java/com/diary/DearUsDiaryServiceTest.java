@@ -47,7 +47,6 @@ class DearUsDiaryServiceTest {
         // Given: 다이어리 직접 저장
         Diary diary = Diary.builder()
                 .name("목록용 다이어리")
-                .ownerId(memberId)
                 .isDeleted(false)
                 .build();
         diaryRepository.save(diary);
