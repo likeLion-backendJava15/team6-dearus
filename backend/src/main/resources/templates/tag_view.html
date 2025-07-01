@@ -1,71 +1,221 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<html lang="ko">
 <head>
-    <meta charset="UTF-8"/>
+    <meta charset="UTF-8" />
     <title>태그 관리</title>
     <style>
-        body { font-family:sans-serif; margin:2rem; }
-        ul { list-style:none; padding:0; }
-        li { margin-bottom:1rem; }
-        .actions { font-size:0.9rem; margin-left:1rem; }
-        input, button, a { margin-right:0.5rem; }
+        :root {
+            --primary-color: #4A90E2;
+            --secondary-color: #F5F7FA;
+            --accent-color: #50E3C2;
+            --text-color: #333;
+            --border-radius: 8px;
+            --transition: 0.3s ease;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--secondary-color);
+            color: var(--text-color);
+            padding: 2rem;
+        }
+        h1 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        form#createForm {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        #newTagName {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+            transition: border-color var(--transition);
+        }
+        #newTagName:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background var(--transition);
+        }
+        button:hover {
+            background: var(--accent-color);
+        }
+        ul#tagList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            list-style: none;
+        }
+        ul#tagList li {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        ul#tagList li span {
+            flex: 1;
+            cursor: pointer;
+        }
+        .actions button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.9rem;
+        }
+        #entriesSection {
+            margin-top: 2rem;
+        }
+        #entriesSection h2 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        ul#entriesList {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        ul#entriesList li {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        ul#entriesList li h3 {
+            font-size: 1.1rem;
+            color: var(--accent-color);
+        }
+        ul#entriesList li p {
+            flex: 1;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
+<h1>태그 관리</h1>
 
-<h1>태그 목록</h1>
-
-<!-- 새 태그 생성 -->
-<form th:action="@{/tags}" method="post">
-    <input type="text" name="name" placeholder="새 태그 이름" required/>
+<form id="createForm">
+    <input type="text" id="newTagName" placeholder="새 태그 이름" required />
     <button type="submit">생성</button>
 </form>
-<hr/>
 
-<ul>
-    <li th:each="tag : ${tags}">
-        <!-- 수정 모드 -->
-        <div th:if="${editTagId} == ${tag.id}">
-            <form th:action="@{/tags/{id}(id=${tag.id})}" method="post" style="display:inline">
-                <input type="text" name="name" th:value="${tag.name}" required/>
-                <button type="submit">저장</button>
-            </form>
-            <a th:href="@{/tags}">취소</a>
-        </div>
+<ul id="tagList"></ul>
 
-        <!-- 일반 모드 -->
-        <div th:unless="${editTagId} == ${tag.id}">
-            <!-- 태그명 클릭 시 selectedTagId만 넘김 -->
-            <a th:href="@{/tags(selectedTagId=${tag.id})}"
-               th:text="${tag.name}">태그명</a>
-            <span class="actions">
-        <a th:href="@{/tags(editTagId=${tag.id}, selectedTagId=${selectedTagId})}">수정</a>
-        <form th:action="@{/tags/{id}(id=${tag.id})}"
-              method="post" style="display:inline"
-              onsubmit="return confirm('정말 삭제하시겠습니까?');">
-          <input type="hidden" name="_method" value="delete"/>
-          <button type="submit">삭제</button>
-        </form>
-                <!-- “일기 보기” 링크 제거 -->
-      </span>
-        </div>
-    </li>
-</ul>
-<hr/>
-
-<!-- 선택된 태그의 일기들 -->
-<div th:if="${selectedTag != null}">
-    <h2 th:text="'#' + ${selectedTag.name} + ' 태그 일기 목록'"></h2>
-    <ul>
-        <li th:each="e : ${entries}">
-            <h3 th:text="${e.title}">제목</h3>
-            <p th:text="${e.content}">본문</p>
-        </li>
-        <li th:if="${#lists.isEmpty(entries)}">
-            해당 태그가 달린 일기가 없습니다.
-        </li>
-    </ul>
+<div id="entriesSection" style="display:none;">
+    <h2 id="entriesHeader"></h2>
+    <ul id="entriesList"></ul>
 </div>
 
+<script>
+    const API = '/api';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadTags();
+        document.getElementById('createForm').addEventListener('submit', handleCreate);
+    });
+
+    async function loadTags(selectedTagId) {
+        const res = await fetch(`${API}/tag`);
+        const tags = await res.json();
+        const list = tags.map(tag => {
+            const selectedStyle = tag.id === selectedTagId ? 'font-weight:bold;' : '';
+            return `
+                <li>
+                    <span style="${selectedStyle}" onclick="onTagClick(${tag.id}, '${tag.name}')">${tag.name}</span>
+                    <div class="actions">
+                        <button onclick="startEdit(${tag.id}, '${tag.name}')">수정</button>
+                        <button onclick="removeTag(${tag.id})">삭제</button>
+                    </div>
+                </li>`;
+        }).join('');
+        document.getElementById('tagList').innerHTML = list;
+    }
+
+    async function handleCreate(e) {
+        e.preventDefault();
+        const name = document.getElementById('newTagName').value.trim();
+        if (!name) return;
+        await fetch(`${API}/tag`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        document.getElementById('newTagName').value = '';
+        loadTags();
+        document.getElementById('entriesSection').style.display = 'none';
+    }
+
+    let editingId = null;
+    function startEdit(id, name) {
+        editingId = id;
+        const li = [...document.querySelectorAll('#tagList li')]
+            .find(node => node.textContent.includes(name));
+        li.innerHTML = `
+                <input id="editName" value="${name}" />
+                <button onclick="saveEdit()">저장</button>
+                <button onclick="cancelEdit()">취소</button>
+            `;
+    }
+
+    async function saveEdit() {
+        const name = document.getElementById('editName').value.trim();
+        if (!name) return;
+        await fetch(`${API}/tag/${editingId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        editingId = null;
+        loadTags();
+    }
+
+    function cancelEdit() {
+        editingId = null;
+        loadTags();
+    }
+
+    async function removeTag(id) {
+        if (!confirm('정말 삭제하시겠습니까?')) return;
+        await fetch(`${API}/tag/${id}`, { method: 'DELETE' });
+        loadTags();
+        document.getElementById('entriesSection').style.display = 'none';
+    }
+
+    async function onTagClick(id, name) {
+        loadTags(id);
+        const res = await fetch(`${API}/tag/${id}/entries`);
+        const entries = await res.json();
+        document.getElementById('entriesHeader').textContent = `#${name} 태그 일기 목록`;
+        const entriesHtml = entries.length
+            ? entries.map(e => `
+                    <li>
+                        <h3>${e.title}</h3>
+                        <p>${e.content}</p>
+                    </li>`).join('')
+            : '<li>해당 태그가 달린 일기가 없습니다.</li>';
+        document.getElementById('entriesList').innerHTML = entriesHtml;
+        document.getElementById('entriesSection').style.display = 'block';
+    }
+</script>
 </body>
 </html>

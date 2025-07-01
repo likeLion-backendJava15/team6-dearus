@@ -22,6 +22,7 @@ public class DearUsApplication {
                 member.setUserId("testuser");
                 member.setNickname("테스트유저");
                 member.setPassword(passwordEncoder.encode("testpass"));
+                member.setEmail("123@naver.com");
                 memberRepository.save(member);
             }
         };
