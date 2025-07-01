@@ -7,11 +7,13 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
-@NoArgsConstructor
+@Setter
 @EqualsAndHashCode
 @Embeddable
+@NoArgsConstructor
 @AllArgsConstructor
 public class DiaryMemberId implements Serializable {
 
