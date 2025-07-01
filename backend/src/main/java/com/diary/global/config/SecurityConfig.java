@@ -20,7 +20,7 @@ public class SecurityConfig {
                 )
                 .formLogin(login -> login
                 .loginPage("/login")
-                .defaultSuccessUrl("/", true)
+                .defaultSuccessUrl("/diary", true)
                 .permitAll())
                 .logout(logout -> logout
                 .logoutSuccessUrl("/index").permitAll());

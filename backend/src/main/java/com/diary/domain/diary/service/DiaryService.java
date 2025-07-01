@@ -66,6 +66,10 @@ public class DiaryService {
                 .collect(Collectors.toList());
     }
 
+    public List<Diary> findAllByMember(Long memberId) {
+        return diaryRepository.findByOwnerIdAndIsDeletedFalse(memberId);
+    }
+
     // 다이어리 단일 조회 : 소유권이 없는 유저가 요청 시 비어 있을 경우 404 예외처리 완료
     @Transactional(readOnly = true)
     public DiaryResponse getDiary(Long diaryId, Long memberId) {
