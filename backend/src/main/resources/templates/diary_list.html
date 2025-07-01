@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>다이어리 목록</title>
+</head>
+<body>
+    <h2>내 다이어리</h2>
+
+    <ul>
+        <li th:each="diary : ${diaries}">
+            <strong th:text="${diary.name}">다이어리 이름</strong>
+        </li>
+    </ul>
+</body>
+</html>

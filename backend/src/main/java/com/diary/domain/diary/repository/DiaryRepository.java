@@ -8,4 +8,5 @@ import com.diary.domain.diary.entity.Diary;
 
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
     List<Diary> findAllByOwnerIdAndIsDeletedFalse(Long id);
+    List<Diary> findByOwnerIdAndIsDeletedFalse(Long ownerId);
 }
