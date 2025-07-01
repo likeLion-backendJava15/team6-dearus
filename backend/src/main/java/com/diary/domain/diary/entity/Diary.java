@@ -25,9 +25,6 @@ public class Diary {
 
     @Column(nullable = false)
     private String name;
-
-    @Column(nullable = false)
-    private Long ownerId;  // Member 엔티티 대신 FK ID만 저장
     
     @Column(nullable = false)
     private Boolean isDeleted = false; // Soft-Delete
