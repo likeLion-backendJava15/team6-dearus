@@ -13,15 +13,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/index", "/register", "/login", "/css/**").permitAll()
-                .anyRequest().authenticated())
-            .formLogin(login -> login
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/index", "/register", "/login", "/css/**").permitAll() // ✅ "/" 제외
+                .anyRequest().authenticated()
+                )
+                .formLogin(login -> login
                 .loginPage("/login")
-                .defaultSuccessUrl("/home", true)
+                .defaultSuccessUrl("/", true)
                 .permitAll())
-            .logout(logout -> logout
+                .logout(logout -> logout
                 .logoutSuccessUrl("/index").permitAll());
 
         return http.build();

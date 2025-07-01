@@ -1,5 +1,7 @@
 package com.diary.domain.entry.controller;
 
+import java.io.IOException;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,8 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,8 +29,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-
-
+// JSON API
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -39,7 +42,14 @@ public class EntryController {
     public ResponseEntity<Map<String, Object>> createEntry(@RequestBody EntryCreateRequestDTO requestDTO, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         Long authorId = userDetails.getId();  // 로그인된 사용자 ID
-        Long entryId = entryService.createEntry(requestDTO, authorId);  // 서비스 호출
+        Long entryId = null;
+        try {
+            entryId = entryService.createEntry(requestDTO, authorId); // 서비스 호출
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                         .body(Map.of("error", "일기 저장 중 오류 발생"));
+        }
 
         // 응답 구성
         Map<String, Object> response = new HashMap<>();
@@ -58,8 +68,9 @@ public class EntryController {
 
     // 일기 상세 조회
     @GetMapping("/entry/{entryId}")
-    public ResponseEntity<EntryResponseDTO> getEntry (@PathVariable Long entryId) {
+    public ResponseEntity<EntryResponseDTO> getEntry (@PathVariable Long entryId, Model model) {
         EntryResponseDTO dto = entryService.getEntryDetail(entryId);
+        model.addAttribute("entry", dto);
         return ResponseEntity.ok(dto);
     }
     
