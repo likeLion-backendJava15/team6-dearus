@@ -1,87 +1,63 @@
-// package com.diary;
+package com.diary;
 
-// import static org.mockito.Mockito.*;
-// import static org.assertj.core.api.Assertions.*;
+import com.diary.domain.diary.dto.DiaryCreateRequest;
+import com.diary.domain.diary.dto.DiaryResponse;
+import com.diary.domain.diary.entity.Diary;
+import com.diary.domain.diary.repository.DiaryRepository;
+import com.diary.domain.diary.service.DiaryService;
 
-// import com.diary.domain.diary.dto.DiaryCreateRequest;
-// import com.diary.domain.diary.dto.DiaryResponse;
-// import com.diary.domain.diary.entity.Diary;
-// import com.diary.domain.diary.repository.DiaryRepository;
-// import com.diary.domain.diary.service.DiaryService;
-// import com.diary.domain.member.entity.DiaryMember;
-// import com.diary.domain.member.service.MemberService;
+import jakarta.transaction.Transactional;
 
-// import org.junit.jupiter.api.BeforeEach;
-// import org.junit.jupiter.api.Test;
-// import org.mockito.*;
-// import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
-// import java.util.List;
+import static org.assertj.core.api.Assertions.*;
 
-// @SpringBootTest
-// public class DearUsDiaryServiceTest {
+import java.util.List;
 
-//     @InjectMocks
-//     private DiaryService diaryService;
+@SpringBootTest
+@Transactional
+class DearUsDiaryServiceTest {
 
-//     @Mock
-//     private DiaryRepository diaryRepository;
+    @Autowired
+    private DiaryService diaryService;
 
-//     @Mock
-//     private MemberService memberService;
+    @Autowired
+    private DiaryRepository diaryRepository;
 
-//     private DiaryMember mockUser;
+    private Long memberId;
 
-//     @BeforeEach
-//     void setup() {
-//         MockitoAnnotations.openMocks(this);
-//         mockUser = DiaryMember.builder()
-//                 .id(1L)
-//                 .userId("testUser")
-//                 .nickname("Tester")
-//                 .password("pw")
-//                 .build();
-//     }
+    @Test
+    void 다이어리_생성_성공() {
+        // Given
+        DiaryCreateRequest request = new DiaryCreateRequest();
+        request.setName("나의 첫 일기장");
 
-//     @Test
-//     void createDiary_정상_생성_및_멤버추가() {
-//         // given
-//         DiaryCreateRequest dto = DiaryCreateRequest.builder().name("감성일기").build();
+        // When
+        DiaryResponse response = diaryService.createDiary(memberId, request);
 
-//         Diary savedDiary = Diary.builder()
-//                 .id(100L)
-//                 .name("감성일기")
-//                 .build();
+        // Then
+        assertThat(response.getName()).isEqualTo("나의 첫 일기장");
+        assertThat(response.getOwnerId()).isEqualTo(memberId);
+    }
 
-//         when(memberService.getCurrentUser()).thenReturn(mockUser);
-//         when(diaryRepository.save(any(Diary.class))).thenReturn(savedDiary);
+    @Test
+    void 다이어리_목록조회_성공() {
+        // Given: 다이어리 직접 저장
+        Diary diary = Diary.builder()
+                .name("목록용 다이어리")
+                .ownerId(memberId)
+                .isDeleted(false)
+                .build();
+        diaryRepository.save(diary);
 
-//         // when
-//         DiaryResponse response = diaryService.createDiary(dto);
+        // When
+        List<DiaryResponse> list = diaryService.getDiaryList(memberId);
 
-//         // then
-//         assertThat(response.getId()).isEqualTo(100L);
-//         assertThat(response.getName()).isEqualTo("감성일기");
-
-//         verify(memberService).addMemberToDiary(mockUser, savedDiary, Role.OWNER);
-//     }
-
-//     @Test
-//     void getMyDiaries_내_일기장_조회() {
-//         // given
-//         when(memberService.getCurrentUser()).thenReturn(mockUser);
-
-//         Diary diary1 = Diary.builder().id(1L).name("다이어리1").build();
-//         Diary diary2 = Diary.builder().id(2L).name("다이어리2").build();
-
-//         when(memberService.findDiariesByUser(mockUser)).thenReturn(List.of(diary1, diary2));
-
-//         // when
-//         List<DiaryResponse> result = diaryService.getMyDiaries();
-
-//         // then
-//         assertThat(result).hasSize(2);
-//         assertThat(result.get(0).getName()).isEqualTo("다이어리1");
-//         assertThat(result.get(1).getName()).isEqualTo("다이어리2");
-//     }
-// }
+        // Then
+        assertThat(list).isNotEmpty();
+        assertThat(list.get(0).getName()).isEqualTo("목록용 다이어리");
+        assertThat(list.get(0).getOwnerId()).isEqualTo(memberId);
+    }
+}

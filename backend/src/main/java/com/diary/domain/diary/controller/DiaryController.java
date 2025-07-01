@@ -1,7 +1,7 @@
 package com.diary.domain.diary.controller;
 
+import java.net.URI;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.diary.domain.diary.dto.DiaryCreateRequest;
@@ -22,41 +23,49 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/diary")
-@RequiredArgsConstructor  // 생성자 의존성 주입 애너테이션
+@RequiredArgsConstructor
 public class DiaryController {
 
     private final DiaryService diaryService;
 
-    //일기장 생성 동작
+    // 다이어리 생성
     @PostMapping
-    public ResponseEntity<DiaryResponse> createDiary(@RequestBody DiaryCreateRequest dto) {
-        return ResponseEntity.ok(diaryService.createDiary(dto));
+    public ResponseEntity<DiaryResponse> createDiary(@RequestParam Long memberId,
+                                                    @RequestBody DiaryCreateRequest requestDto) {
+        DiaryResponse response = diaryService.createDiary(memberId, requestDto);
+
+        // Location: /api/diary/{id}
+        return ResponseEntity
+            .created(URI.create("/api/diary/" + response.getId()))
+            .body(response);
     }
 
-    //일기장 목록 조회 동작
+    // 다이어리 목록 조회
     @GetMapping
-    public ResponseEntity<List<DiaryResponse>> getDiaryList() {
-        return ResponseEntity.ok(diaryService.getDiaryList());
+    public ResponseEntity<List<DiaryResponse>> getDiaryList(@RequestParam Long memberId) {
+        return ResponseEntity.ok(diaryService.getDiaryList(memberId));
     }
 
-    //일기장 단일 조회 동작
+    // 다이어리 단일 조회
     @GetMapping("/{id}")
-    public ResponseEntity<DiaryResponse> getDiary(@PathVariable Long id) {
-        return ResponseEntity.ok(diaryService.getDiary(id));
+    public ResponseEntity<DiaryResponse> getDiary(@PathVariable Long id,
+                                                  @RequestParam Long memberId) {
+        return ResponseEntity.ok(diaryService.getDiary(id, memberId));
     }
 
-    //일기장 수정 동작
+    // 다이어리 수정
     @PutMapping("/{id}")
-    public ResponseEntity<Map<String, String>> updateDiary(@PathVariable Long id,
-                                                           @RequestBody DiaryUpdateRequest dto) {
-        diaryService.updateDiary(id, dto);
-        return ResponseEntity.ok(Map.of("message : ", "수정 완료"));
+    public ResponseEntity<DiaryResponse> updateDiary(@PathVariable Long id,
+                                                     @RequestParam Long memberId,
+                                                     @RequestBody DiaryUpdateRequest requestDto) {
+        return ResponseEntity.ok(diaryService.updateDiary(id, memberId, requestDto));
     }
 
-    //일기장 삭제 동작
+    // 다이어리 삭제
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> deleteDiary(@PathVariable Long id, Long memberId) {
+    public ResponseEntity<Void> deleteDiary(@PathVariable Long id,
+                                            @RequestParam Long memberId) {
         diaryService.deleteDiary(id, memberId);
-        return ResponseEntity.ok(Map.of("message : ", "삭제 완료"));
+        return ResponseEntity.noContent().build();
     }
 }
