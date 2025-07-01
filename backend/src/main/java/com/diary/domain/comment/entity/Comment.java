@@ -24,7 +24,7 @@ public class Comment {
     private DiaryEntry diaryEntry;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private Member member;
 
     @Column(nullable = false, columnDefinition = "TEXT")
