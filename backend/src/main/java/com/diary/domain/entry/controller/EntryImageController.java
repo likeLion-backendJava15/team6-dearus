@@ -19,8 +19,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/image")
 @RequiredArgsConstructor
 public class EntryImageController {
-    
-    private static final String UPLOAD_DIR = "src/main/resources/static/uploads/";
+
+    private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/";
 
     @PostMapping("/upload")
     public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("image") MultipartFile imageFile) {
@@ -30,15 +30,15 @@ public class EntryImageController {
             // 파일명 생성 (UUID + 원래 이름)
             String originalFilename = imageFile.getOriginalFilename();
             String filename = UUID.randomUUID() + "_" + originalFilename;
+            String tempDir = System.getProperty("user.dir") + "/temp-uploads/";
 
             // 저장 경로
-            File file = new File(UPLOAD_DIR + filename);
+            File file = new File(tempDir + filename);
             file.getParentFile().mkdirs(); // 디렉토리 없으면 생성
             imageFile.transferTo(file);    // 파일 저장
 
             // 이미지 접근 URL
-            String imageUrl = "/uploads/" + filename;
-            result.put("url", imageUrl);
+            result.put("url", "/temp-uploads/" + filename);
 
             return ResponseEntity.ok(result);
 

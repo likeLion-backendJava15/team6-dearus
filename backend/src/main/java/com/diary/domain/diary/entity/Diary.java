@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.diary.domain.entry.entity.DiaryEntry;
 import com.diary.domain.member.entity.DiaryMember;
+import com.diary.domain.member.entity.Member;
 
 @Entity
 @Getter
@@ -36,5 +37,8 @@ public class Diary {
 
     @OneToMany(mappedBy = "diary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryMember> members = new ArrayList<>();
-    
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private Member owner;
 }

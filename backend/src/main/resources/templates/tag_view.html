@@ -15,52 +15,45 @@
 
 <h1>태그 목록</h1>
 
-<!-- (1) 새 태그 생성 -->
+<!-- 새 태그 생성 -->
 <form th:action="@{/tags}" method="post">
     <input type="text" name="name" placeholder="새 태그 이름" required/>
     <button type="submit">생성</button>
 </form>
 <hr/>
 
-<!-- (2) 태그 리스트 & 수정 모드 토글 -->
 <ul>
-    <!-- 수정 모드 -->
-    <li th:each="tag : ${tags}"
-        th:if="${editTagId} == ${tag.id}">
+    <li th:each="tag : ${tags}">
+        <!-- 수정 모드 -->
+        <div th:if="${editTagId} == ${tag.id}">
+            <form th:action="@{/tags/{id}(id=${tag.id})}" method="post" style="display:inline">
+                <input type="text" name="name" th:value="${tag.name}" required/>
+                <button type="submit">저장</button>
+            </form>
+            <a th:href="@{/tags}">취소</a>
+        </div>
+
+        <!-- 일반 모드 -->
+        <div th:unless="${editTagId} == ${tag.id}">
+            <!-- 태그명 클릭 시 selectedTagId만 넘김 -->
+            <a th:href="@{/tags(selectedTagId=${tag.id})}"
+               th:text="${tag.name}">태그명</a>
+            <span class="actions">
+        <a th:href="@{/tags(editTagId=${tag.id}, selectedTagId=${selectedTagId})}">수정</a>
         <form th:action="@{/tags/{id}(id=${tag.id})}"
-              method="post" style="display:inline">
-            <input type="text" name="name"
-                   th:value="${tag.name}" required/>
-            <button type="submit">저장</button>
+              method="post" style="display:inline"
+              onsubmit="return confirm('정말 삭제하시겠습니까?');">
+          <input type="hidden" name="_method" value="delete"/>
+          <button type="submit">삭제</button>
         </form>
-        <a th:href="@{/tags}">취소</a>
-    </li>
-
-    <!-- 일반 모드 -->
-    <li th:each="tag : ${tags}"
-        th:unless="${editTagId} == ${tag.id}">
-        <span th:text="${tag.name}">태그명</span>
-        <span class="actions">
-      <!-- 수정 모드 진입 -->
-      <a th:href="@{/tags(editTagId=${tag.id}, selectedTagId=${selectedTagId})}">수정</a>
-            <!-- 삭제 -->
-      <form th:action="@{/tags/{id}(id=${tag.id})}"
-            method="post" style="display:inline"
-            onsubmit="return confirm('정말 삭제하시겠습니까?');">
-        <input type="hidden" name="_method" value="delete"/>
-        <button type="submit">삭제</button>
-      </form>
-            <!-- 일기 목록 보기 -->
-      <a th:href="@{/tags(editTagId=${editTagId}, selectedTagId=${tag.id})}">일기 보기</a>
-    </span>
+                <!-- “일기 보기” 링크 제거 -->
+      </span>
+        </div>
     </li>
 </ul>
-
-</ul>
-
 <hr/>
 
-<!-- (3) 선택된 태그의 일기들 -->
+<!-- 선택된 태그의 일기들 -->
 <div th:if="${selectedTag != null}">
     <h2 th:text="'#' + ${selectedTag.name} + ' 태그 일기 목록'"></h2>
     <ul>

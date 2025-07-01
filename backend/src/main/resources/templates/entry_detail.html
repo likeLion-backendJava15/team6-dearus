@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title th:text="${entry.title}">일기 상세</title>
+    <link rel="stylesheet" th:href="@{/css/entry.css}" />
+    <style>
+      body {
+        padding: 20px;
+        font-family: sans-serif;
+      }
+      .entry-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .entry-meta {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 20px;
+      }
+      .entry-content {
+        border-top: 1px solid #ccc;
+        padding-top: 20px;
+      }
+      .entry-image {
+        max-width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+      }
+
+      button,
+      form button {
+        padding: 7px 10px;
+        font-size: 13px;
+        cursor: pointer;
+        border: 0px;
+        border-radius: 10px;
+        background-color: #e4e4e4;
+        color: rgb(33, 49, 38);
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="entry-title" th:text="${entry.title}">제목</div>
+
+    <div class="entry-meta">
+      <span th:text="'작성자: ' + ${entry.authorNickname}"></span> |
+      <span th:text="${entry.emotionEmoji} + ${entry.emotion}"></span> |
+      <span th:text="${#temporals.format(entry.createdAt, 'yyyy-MM-dd HH:mm')}"
+        >작성일</span
+      >
+    </div>
+
+    <!-- 본인이 작성한 경우에만 표시 -->
+    <div
+      th:if="${entry.authorId == loginMemberId}"
+      style="margin-top: 10px; margin-bottom: 10px"
+    >
+      <div style="display: flex; gap: 10px">
+        <!-- 수정 버튼 -->
+        <form th:action="@{/entry/edit/{id}(id=${entry.id})}" method="get">
+          <button type="submit">✏️ 수정</button>
+        </form>
+
+        <!-- 삭제 버튼 -->
+        <button th:onclick="|deleteEntry(${entry.id}, ${entry.diaryId})|">
+          🗑️ 삭제
+        </button>
+      </div>
+    </div>
+
+    <!-- 대표 이미지 -->
+    <!-- <div th:if="${entry.imageUrl != null}">
+    <img th:src="@{${entry.imageUrl}}" alt="대표 이미지" class="entry-image"/>
+  </div> -->
+
+    <!-- HTML 본문 (Toast UI Editor로 작성된 content) -->
+    <div class="entry-content" th:utext="${entry.content}"></div>
+
+    <div>
+      <br />
+      <hr style="background-color: #cccccc; height: 1px; border: 0" />
+      <br />
+      <span
+        th:each="tag : ${entry.tags}"
+        th:text="${tag}"
+        class="tag-item"
+        style="
+          background: #e0f3f1;
+          margin-right: 5px;
+          padding: 5px 10px;
+          border-radius: 12px;
+          font-size: 14px;
+        "
+      >
+      </span>
+    </div>
+
+    <script>
+      function deleteEntry(entryId, diaryId) {
+        if (!confirm("정말 삭제하시겠습니까?")) return;
+
+        fetch(`/api/entry/${entryId}`, {
+          method: "DELETE",
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error("삭제 실패");
+            return res.json();
+          })
+          .then(() => {
+            alert("삭제 완료");
+            location.href = `/entry/list?diaryId=${diaryId}`;
+          })
+          .catch((err) => alert(err.message));
+      }
+    </script>
+  </body>
+</html>

@@ -1,61 +1,163 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8">
-  <title>일기 목록</title>
-  <style>
-    body { padding: 20px; font-family: sans-serif; }
-    .entry-list { list-style: none; padding: 0; }
-    .entry-item { border-bottom: 1px solid #ddd; padding: 10px 0; }
-    .entry-title { font-weight: bold; font-size: 18px; margin-bottom: 5px; color: blue; text-decoration: underline; cursor: pointer; }
-    .entry-meta { font-size: 14px; color: #666; }
-    .write-btn { margin-top: 20px; }
-  </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>일기 목록</title>
+    <link rel="stylesheet" th:href="@{/css/entry.css}" />
+    <style>
+      body {
+        padding: 20px;
+        font-family: sans-serif;
+      }
+      .entry-list {
+        list-style: none;
+        padding: 0;
+      }
+      .entry-item {
+        border-bottom: 1px solid #ddd;
+        padding: 10px 0;
+      }
+      .entry-title {
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 5px;
+        color: blue;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .entry-meta {
+        font-size: 14px;
+        color: #666;
+      }
+      .write-btn {
+        margin-top: 40px;
+      }
 
-<h2 th:text="'📘 ' + ${diaryName} + '의 일기들'">일기 목록</h2>
+      .tag-item {
+        background: #e0f3f1;
+        margin-right: 5px;
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-size: 14px;
+        display: inline-block;
+      }
 
-<ul class="entry-list">
-  <li th:each="entry : ${entryList}" class="entry-item">
-    
-    <!-- 제목에 상세 페이지 링크 추가 -->
-    <a th:href="@{'/entry/detail/' + ${entry.id}}" class="entry-title" th:text="${entry.title}">제목</a>
-
-    <!-- 메타 정보: 감정, 작성자, 날짜 -->
-    <div class="entry-meta">
-      <span th:utext="${#strings.arrayJoin({'감정: ', getEmotionEmoji(entry.emotion)}, '')}"></span> |
-      <span th:text="'작성자: ' + ${entry.authorNickname}">작성자</span> |
-      <span th:text="${#temporals.format(entry.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span>
+      button {
+        padding: 7px 10px;
+        font-size: 13px;
+        cursor: pointer;
+        border: 0px;
+        border-radius: 10px;
+        background-color: #e4e4e4;
+        color: rgb(33, 49, 38);
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h2 th:text="'📘 ' + ${diaryName}">일기 목록</h2>
+    <!-- 글쓰기 버튼 -->
+    <div class="write-btn">
+      <a th:href="@{'/entry/form'(diaryId=${diaryId})}">
+        <button>✍️ 글쓰기</button>
+      </a>
     </div>
-  </li>
-</ul>
 
-<!-- 글쓰기 버튼 -->
-<div class="write-btn">
-  <a th:href="@{'/entry/form'(diaryId=${diaryId})}">
-    <button>✍️ 글쓰기</button>
-  </a>
-</div>
+    <hr style="background-color: #cccccc; height: 1px; border: 0" />
 
-<!-- 감정별 이모지 매핑 스크립트 -->
-<script th:inline="javascript">
-  /*<![CDATA[*/
-  function getEmotionEmoji(emotion) {
-    const map = {
-      '행복해': '😊',
-      '즐거워': '😄',
-      '감사해': '🙏',
-      '사랑해': '❤️',
-      '뿌듯해': '😌',
-      '그저그래': '😐',
-      '화나': '😡',
-      '힘들어': '😫'
-    };
-    return map[emotion] || '';
-  }
-  /*]]>*/
-</script>
+    <ul class="entry-list">
+      <li
+        th:each="entry : ${entryList}"
+        class="entry-item"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+        "
+      >
+        <!-- 왼쪽: 제목 + 메타 + 태그 -->
+        <div style="flex: 1">
+          <span th:text="${entry.emotionEmoji}"></span>
 
-</body>
+          <a
+            th:href="@{'/entry/detail/' + ${entry.id}}"
+            class="entry-title"
+            th:text="${entry.title}"
+          ></a>
+
+          <div class="entry-meta">
+            <span th:text="'작성자: ' + ${entry.authorNickname}"></span> |
+            <span
+              th:text="${#temporals.format(entry.createdAt, 'yyyy-MM-dd HH:mm')}"
+            ></span>
+          </div>
+
+          <div style="margin-top: 5px">
+            <span
+              th:each="tag : ${entry.tags}"
+              th:text="'#' + ${tag}"
+              class="tag-item"
+            ></span>
+          </div>
+        </div>
+
+        <!-- 오른쪽: 수정/삭제 버튼 -->
+        <div
+          th:if="${entry.authorId == loginMemberId}"
+          style="white-space: nowrap; margin-left: 10px"
+        >
+          <form
+            th:action="@{/entry/edit/{id}(id=${entry.id})}"
+            method="get"
+            style="display: inline"
+          >
+            <button type="submit">✏️ 수정</button>
+          </form>
+          <button
+            type="button"
+            th:onclick="|deleteEntry(${entry.id}, ${diaryId})|"
+          >
+            🗑️ 삭제
+          </button>
+        </div>
+      </li>
+    </ul>
+
+    <!-- 감정별 이모지 매핑 스크립트 -->
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      function getEmotionEmoji(emotion) {
+        const map = {
+          행복해: "😊",
+          즐거워: "😄",
+          감사해: "🙏",
+          사랑해: "❤️",
+          뿌듯해: "😌",
+          그저그래: "😐",
+          화나: "😡",
+          힘들어: "😫",
+        };
+        return map[emotion] || "";
+      }
+      /*]]>*/
+    </script>
+    <script>
+      function deleteEntry(entryId, diaryId) {
+        if (!confirm("정말 삭제하시겠습니까?")) return;
+
+        fetch(`/api/entry/${entryId}`, {
+          method: "DELETE",
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error("삭제 실패");
+            return res.json();
+          })
+          .then(() => {
+            alert("삭제 완료");
+            location.href = `/entry/list?diaryId=${diaryId}`;
+          })
+          .catch((err) => alert(err.message));
+      }
+    </script>
+  </body>
 </html>

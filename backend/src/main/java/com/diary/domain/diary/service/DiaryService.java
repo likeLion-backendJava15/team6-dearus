@@ -36,6 +36,7 @@ public class DiaryService {
                                 .isDeleted(false)
                                 .build();
 
+
                 diaryRepository.save(diary);
 
                 return DiaryResponse.builder()

@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/dearus?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
     username: dearusUser
-    password: 0000
+    password: "0000"
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
