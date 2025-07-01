@@ -1,43 +1,32 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head>
+<head>
     <title>로그인</title>
-    <meta charset="UTF-8" />
-  </head>
-  <body>
+    <meta charset="UTF-8">
+</head>
+<body>
     <h2>로그인</h2>
 
     <form th:action="@{/login}" method="post">
-      <div>
-        <label for="username">아이디</label>
-        <input type="text" id="username" name="username" placeholder="아이디" />
-      </div>
-      <div>
-        <label for="password">비밀번호</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          placeholder="비밀번호"
-        />
-      </div>
-      <div>
-        <button type="submit">로그인</button>
-      </div>
+        <div>
+            <label for="username">아이디</label>
+            <input type="text" id="username" name="username" placeholder="아이디" />
+        </div>
+        <div>
+            <label for="password">비밀번호</label>
+            <input type="password" id="password" name="password" placeholder="비밀번호" />
+        </div>
+        <div>
+            <button type="submit">로그인</button>
+        </div>
     </form>
 
-    <div>
-      <a th:href="@{/register}">
-        <button type="button">회원가입</button>
-      </a>
-    </div>
-
     <div th:if="${param.error}">
-      <p style="color: rgb(209, 43, 43)">아이디 또는 비밀번호가 올바르지 않습니다.</p>
+        <p style="color: red;">아이디 또는 비밀번호가 올바르지 않습니다.</p>
     </div>
 
     <div th:if="${param.logout}">
-      <p>로그아웃 되었습니다.</p>
+        <p>로그아웃 되었습니다.</p>
     </div>
-  </body>
+</body>
 </html>
