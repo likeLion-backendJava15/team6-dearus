@@ -1,18 +1,15 @@
 package com.diary.domain.member.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
+@Entity
+@Table(name = "`user`") // ⚠️ 백틱으로 감싸야 예약어 충돌 방지됨
 @Getter
 @Setter
-@Entity
-@Table(name = "User")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Member {
 
     @Id
@@ -27,4 +24,7 @@ public class Member {
 
     @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    private String email;
 }
