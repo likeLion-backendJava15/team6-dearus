@@ -69,7 +69,6 @@
         border-radius: 4px;
       }
 
-   
       .modal {
         position: fixed;
         z-index: 1000;
@@ -82,7 +81,6 @@
         display: none;
       }
 
-      
       .modal-content {
         background: white;
         padding: 20px;
@@ -132,7 +130,6 @@
         background-color: #0984e3;
       }
 
-      
       #openDatePickerBtn {
         padding: 8px 16px;
         border: none;
@@ -193,12 +190,14 @@
 
       #userPieChart {
         width: 100% !important;
-        height: 530px !important;
+        height: auto !important; 
+        aspect-ratio: 1 / 1;
+        display: block;
       }
 
       .pie-wrapper {
         max-width: 60%;
-        margin: 20px auto 0; 
+        margin: 20px auto 0;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -244,7 +243,6 @@
 
     <script th:inline="javascript">
       const diaryId = "[[${diaryId}]]";
-      const userId = "[[${userId}]]";
 
       const colorMap = {
         행복해: "#ff7675",
@@ -338,6 +336,7 @@
             },
             options: {
               responsive: true,
+              maintainAspectRatio: true,
               plugins: {
                 tooltip: {
                   callbacks: {
@@ -404,9 +403,7 @@
         if (start) params.append("start", start);
         if (end) params.append("end", end);
 
-        fetch(
-          `/api/emotion/${diaryId}/user/${userId}/stat?${params.toString()}`
-        )
+        fetch(`/api/emotion/${diaryId}/stat?${params.toString()}`)
           .then((res) => res.json())
           .then((data) => {
             renderTotalBar(data.totalcounts);
