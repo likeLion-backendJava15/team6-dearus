@@ -18,6 +18,7 @@
       .diary-item {
         border-bottom: 1px solid #ddd;
         padding: 10px 0;
+        padding-bottom: 24px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -26,9 +27,14 @@
       .diary-name {
         font-weight: bold;
         font-size: 18px;
-        color: blue;
-        text-decoration: underline;
+        color: rgb(0, 0, 0);
+        text-decoration: none;
         cursor: pointer;
+        transition: color 0.2s ease;
+      }
+
+      .diary-name:hover {
+        color: #4271a7;
       }
 
       .button-container {
@@ -37,6 +43,7 @@
         margin-top: 20px;
       }
 
+      button,
       .btn {
         padding: 7px 10px;
         font-size: 13px;
@@ -48,44 +55,27 @@
         text-decoration: none;
         display: inline-block;
         border: none;
+        transition: background-color 0.2s ease;
       }
 
       .btn:hover {
         background-color: #4271a7;
       }
+
+      .diary-item {
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
     </style>
   </head>
   <body>
-    <div th:replace="fragments/header :: header"></div>
+    <div th:replace="~{fragments/header :: header}"></div>
 
     <h2>📚 내 일기장</h2>
 
     <div class="button-container">
       <a th:href="@{/diary/form}" class="btn">+ 새 일기장 만들기</a>
       <a th:href="@{/tags}" class="btn">🔖 내 태그 보기</a>
-      <button class="btn" onclick="openInvitePopup()">📬 받은 초대</button>
-      <div
-        id="invite-modal"
-        style="
-          display: none;
-          position: fixed;
-          top: 20%;
-          left: 50%;
-          transform: translate(-50%, 0);
-          background: white;
-          border: 1px solid #ccc;
-          padding: 20px;
-          z-index: 1000;
-        "
-      >
-        <h3>📨 받은 초대 목록</h3>
-        <div id="invite-list">
-          <!-- 여기에 초대 목록이 동적으로 추가됨 -->
-        </div>
-        <button onclick="closeInvitePopup()" style="margin-top: 10px">
-          닫기
-        </button>
-      </div>
     </div>
 
     <hr style="background-color: #cccccc; height: 1px; border: 0" />
@@ -143,7 +133,6 @@
       </li>
     </ul>
 
-
     <!--  --  --  --  -- script --  --  --  -- -->
     <script>
       // 멤버 초대
@@ -179,63 +168,6 @@
           .catch((err) => {
             alert(err.message);
           });
-      }
-
-      // 초대 확인
-      function openInvitePopup() {
-        fetch("/api/diary/invites")
-          .then((res) => {
-            if (!res.ok) throw new Error("초대 목록을 불러오지 못했습니다.");
-            return res.json();
-          })
-          .then((invites) => {
-            const listDiv = document.getElementById("invite-list");
-            listDiv.innerHTML = "";
-
-            if (invites.length === 0) {
-              listDiv.innerHTML = "<p>받은 초대가 없습니다.</p>";
-            } else {
-              invites.forEach((invite) => {
-                const entry = document.createElement("div");
-                entry.innerHTML = `
-              <p><strong>${invite.diaryName}</strong>에 초대되었습니다.</p>
-              <button onclick="acceptInvite(${invite.diaryId})">수락</button>
-              <button onclick="declineInvite(${invite.diaryId})">거절</button>
-              <hr/>
-            `;
-                listDiv.appendChild(entry);
-              });
-            }
-
-            document.getElementById("invite-modal").style.display = "block";
-          })
-          .catch((err) => alert(err.message));
-      }
-
-      function closeInvitePopup() {
-        document.getElementById("invite-modal").style.display = "none";
-      }
-
-      function acceptInvite(diaryId) {
-        fetch(`/api/diary/${diaryId}/accept`, { method: "POST" })
-          .then((res) => {
-            if (!res.ok) throw new Error("수락 실패");
-            alert("초대를 수락했습니다.");
-            closeInvitePopup();
-            location.reload();
-          })
-          .catch((err) => alert(err.message));
-      }
-
-      function declineInvite(diaryId) {
-        fetch(`/api/diary/${diaryId}/decline`, { method: "DELETE" })
-          .then((res) => {
-            if (!res.ok) throw new Error("거절 실패");
-            alert("초대를 거절했습니다.");
-            closeInvitePopup();
-            location.reload();
-          })
-          .catch((err) => alert(err.message));
       }
 
       // 일기장 삭제

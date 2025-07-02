@@ -4,12 +4,18 @@ import com.diary.domain.member.dto.InviteRequest;
 import com.diary.domain.member.dto.InviteResponse;
 import com.diary.domain.member.dto.MemberResponse;
 import com.diary.domain.member.service.MemberInviteService;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
+import com.diary.global.auth.CustomUserDetails;
 
 @RestController
 @RequiredArgsConstructor
@@ -73,4 +79,12 @@ public class MemberController {
         return ResponseEntity.ok(invites);
     }
 
+    @DeleteMapping("/{diaryId}/decline")
+    public ResponseEntity<Map<String, String>> declineInvite(
+            @PathVariable Long diaryId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        memberInviteService.declineInvite(diaryId, userDetails.getId());
+        return ResponseEntity.ok(Map.of("message", "초대 거절 완료"));
+    }
 }

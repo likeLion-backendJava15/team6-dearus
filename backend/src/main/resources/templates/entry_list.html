@@ -16,21 +16,25 @@
       .entry-item {
         border-bottom: 1px solid #ddd;
         padding: 10px 0;
+        padding-bottom: 24px;
       }
       .entry-title {
         font-weight: bold;
         font-size: 18px;
         margin-bottom: 5px;
-        color: blue;
-        text-decoration: underline;
+        color: rgb(0, 0, 0);
+        text-decoration: none;
         cursor: pointer;
+        transition: color 0.2s ease;
       }
+
+      .entry-title:hover {
+        color: #4271a7;
+      }
+
       .entry-meta {
         font-size: 14px;
         color: #666;
-      }
-      .write-btn {
-        margin-top: 40px;
       }
 
       .tag-item {
@@ -42,21 +46,30 @@
         display: inline-block;
       }
 
-      button {
-        padding: 7px 10px;
-        font-size: 13px;
-        cursor: pointer;
-        border: 0px;
-        border-radius: 10px;
-        background-color: #e4e4e4;
-        color: rgb(33, 49, 38);
-        font-weight: bold;
-      }
-
       .button-container {
         display: flex;
         gap: 10px;
         margin-top: 20px;
+      }
+
+      .write-btn {
+        margin-top: 40px;
+        padding: 7px 10px;
+        font-size: 13px;
+        cursor: pointer;
+        border-radius: 10px;
+        background-color: #f2f6ff;
+        color: #3167c5;
+        font-weight: bold;
+        text-decoration: none;
+        display: inline-block;
+        border: none;
+        transition: background-color 0.2s ease;
+      }
+
+      .write-btn:hover {
+        background-color: #4271a7;
+        color: #f2f6ff;
       }
 
       .title-container {
@@ -78,6 +91,8 @@
     </style>
   </head>
   <body>
+
+    <div th:replace="~{fragments/header :: header}"></div>
     <div class="title-container">
   <h2 th:text="'📘 ' + ${diaryName}">일기 목록</h2>
   <button
@@ -91,11 +106,9 @@
 </div>
     <div class="button-container">
       <a th:href="@{'/entry/form'(diaryId=${diaryId})}">
-        <button>✍️ 글쓰기</button> </a
+        <button class="write-btn">✍️ 글쓰기</button> </a
       ><!--
-  --><a th:href="@{'/diary'}">
-        <button>📚 일기장 목록으로</button>
-      </a>
+  -->
     </div>
 
     <hr style="background-color: #cccccc; height: 1px; border: 0" />
