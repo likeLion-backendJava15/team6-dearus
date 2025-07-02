@@ -110,18 +110,22 @@ public class TagService {
 
     @Transactional
     public void removeTagFromEntry(Long entryId, Long tagId) {
-        // 일기 조회
         DiaryEntry entry = diaryEntryRepository.findById(entryId)
                 .orElseThrow(() -> new RuntimeException("일기 번호 없음 : " + entryId));
-        // 태그 조회
+
         Tag tag = tagRepository.findById(tagId)
                 .orElseThrow(() -> new RuntimeException("태그 번호 없음 : " + tagId));
 
-        // 태그 제거
-        entry.getTags().remove(tag);
+        entry.getTags().remove(tag); // 관계만 제거
+
+        // 연관된 일기 없으면 태그도 제거
+        if (tag.getEntries().isEmpty()) {
+            tagRepository.delete(tag);
+        }
 
         diaryEntryRepository.save(entry);
     }
+
 
     // Helper: DiaryEntry → EntryResponse
     private EntryResponseDTO toEntryResponseDTO(DiaryEntry e) {

@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.io.File;
@@ -290,16 +291,36 @@ public class EntryService {
     }
 
     // 일기 삭제
+    @Transactional
     public void deleteEntry(Long entryId, Long memberId) {
         DiaryEntry entry = getEntryOrThrow(entryId);
         Long diaryId = entry.getDiary().getId();
+
+        // 권한 확인
         permissionChecker.checkAccess(memberId, diaryId);
 
+        // 작성자인지 확인
         if (!entry.getAuthor().getId().equals(memberId)) {
             throw new CustomException("작성자가 아니므로 삭제 불가", HttpStatus.FORBIDDEN);
         }
 
+        // 연관된 태그들 복사 (ConcurrentModification 방지)
+        Set<Tag> relatedTags = new HashSet<>(entry.getTags());
+
+        // 일기에서 태그 관계 제거
+        entry.getTags().clear();
+
+        // 사용되지 않는 태그 삭제
+        for (Tag tag : relatedTags) {
+            tag.getEntries().remove(entry); // 양방향 제거 (혹시모름 대비)
+            if (tag.getEntries().isEmpty()) {
+                tagRepository.delete(tag);
+            }
+        }
+
+        // 마지막으로 일기 삭제
         diaryEntryRepository.delete(entry);
     }
+
 
 }
