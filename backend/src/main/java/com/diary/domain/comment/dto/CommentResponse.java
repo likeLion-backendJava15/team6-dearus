@@ -23,6 +23,7 @@ public class CommentResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    @Builder.Default
     private List<CommentResponse> children = new ArrayList<>(); 
 
     public static CommentResponse from(Comment comment) {
@@ -35,6 +36,7 @@ public class CommentResponse {
                 .parentCommentId(comment.getParentComment() != null ? comment.getParentComment().getId() : null)
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
+                .children(new ArrayList<>())
                 .build();
     }
 }
