@@ -13,7 +13,9 @@ import com.diary.domain.member.repository.DiaryMemberRepository;
 import com.diary.domain.member.repository.MemberRepository;
 import com.diary.global.auth.CustomUserDetails;
 import com.diary.global.exception.CustomException;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +23,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -137,4 +141,18 @@ public class MemberInviteService {
         return memberRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
+
+    // 초대 거절
+    @Transactional
+    public void declineInvite(Long diaryId, Long memberId) {
+        DiaryMember diaryMember = diaryMemberRepository.findByDiaryIdAndMemberId(diaryId, memberId)
+                .orElseThrow(() -> new CustomException("초대 정보가 존재하지 않습니다.", HttpStatus.NOT_FOUND));
+
+        if (diaryMember.isAccepted()) {
+            throw new CustomException("이미 수락한 초대는 거절할 수 없습니다.", HttpStatus.CONFLICT);
+        }
+
+        diaryMemberRepository.delete(diaryMember);  // 아직 수락되지 않은 경우만 삭제
+    }
+
 }

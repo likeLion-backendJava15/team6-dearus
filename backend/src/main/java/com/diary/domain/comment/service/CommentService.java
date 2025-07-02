@@ -72,8 +72,6 @@ public class CommentService {
 
     @Transactional
     public List<CommentResponse> getComments(Long entryId) {
-        em.flush();  // 변경 사항을 DB에 반영
-        em.clear();  // 1차 캐시 초기화 (이게 핵심)
         
         List<Comment> comments = commentRepository.findByDiaryEntryId(entryId);
 

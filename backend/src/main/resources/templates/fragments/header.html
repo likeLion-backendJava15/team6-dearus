@@ -1,54 +1,199 @@
 <div th:fragment="header">
-  <div class="header">
-    <img th:src="@{/img/dearus-logo.png}" alt="DearUs 로고" class="logo"/>
-    <div class="header-actions">
-      <span th:text="${#authentication.name}">user</span>
-      <form th:action="@{/logout}" method="post" style="display: inline">
-        <button type="submit" class="btn btn-logout">🚪 로그아웃</button>
+  <header class="dearus-header">
+    <!-- 좌측: 로고 -->
+    <div class="left">
+      <a th:href="@{/}">
+        <img th:src="@{/img/dearus-logo.png}" alt="DearUs 로고" class="logo" />
+      </a>
+    </div>
+
+    <!-- 우측: 사용자 정보 및 네비게이션 -->
+    <div class="right">
+      <span class="user" th:text="${#authentication.name}">user</span>
+      <span>님 환영합니다!</span>
+
+      <span class="divider">|</span>
+
+      <a th:href="@{/diary}" class="nav-link">📚 일기장 목록</a>
+
+      <span class="divider">|</span>
+
+      <button class="nav-link" onclick="openInvitePopup()">📬 받은 초대</button>
+
+      <span class="divider">|</span>
+
+      <form th:action="@{/logout}" method="post">
+        <button type="submit" class="btn-logout">로그아웃</button>
       </form>
     </div>
+  </header>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+
+  <!-- 초대 모달 -->
+  <div id="invite-modal" class="invite-modal">
+    <h3>📨 받은 초대 목록</h3>
+    <div id="invite-list"></div>
+    <button onclick="closeInvitePopup()" class="modal-close-btn">닫기</button>
   </div>
 
+  <!-- Style -->
   <style>
-    .header {
+    .dearus-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 25px;
-      background-color: rgb(146, 163, 192);
-      color: #4271a7;
-      margin-bottom: 30px;
-      border-radius: 10px;
-    }
-
-    img {
-      width: 50px;
+      background-color: white;
+      padding: 15px 30px;
+      border-bottom: 1px solid #e0e0e0;
+      box-shadow: 0 3px rgba(158, 177, 228, 0.05);
+      height: 80px;
+      font-family: 'Pretendard', sans-serif;
     }
 
     .logo {
-      font-size: 22px;
-      font-weight: bold;
-      margin: 0;
+      height: 100px;
+      vertical-align: middle;
     }
 
-    .header-actions {
+    .right {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 14px;
+      font-size: 15px;
+    }
+
+    .user {
+      font-weight: bold;
+      color: #4271a7;
+    }
+
+    .divider {
+      color: #ccc;
+    }
+
+    .nav-link {
+      font-family: 'Pretendard', sans-serif;
+      text-decoration: none;
+      background: none;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      color: #313131;
+      transition: color 0.25s ease;
+      font-size: 14px;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+
+    .nav-link:hover {
+      background-color: #f2f6ff;
+      color: #3167c5;
     }
 
     .btn-logout {
-      background-color: white;
-      color: #4a90e2;
+      font-family: 'Pretendard', sans-serif;
+      background: none;
       border: none;
-      padding: 6px 12px;
+      color: #888;
       font-weight: bold;
-      border-radius: 6px;
       cursor: pointer;
+      padding: 6px 10px;
+      font-size: 14px;
+      border-radius: 6px;
+      transition: background-color 0.25s ease;
     }
 
     .btn-logout:hover {
       background-color: #f1f1f1;
     }
+
+    .invite-modal {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, 0);
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 20px;
+      z-index: 1000;
+      max-width: 300px;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    }
+
+    .modal-close-btn {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .modal-close-btn:hover {
+      background-color: #357ac8;
+    }
   </style>
+
+  <!-- Script -->
+  <script>
+    function openInvitePopup() {
+      fetch("/api/diary/invites")
+        .then((res) => {
+          if (!res.ok) throw new Error("초대 목록을 불러오지 못했습니다.");
+          return res.json();
+        })
+        .then((invites) => {
+          const listDiv = document.getElementById("invite-list");
+          listDiv.innerHTML = "";
+
+          if (invites.length === 0) {
+            listDiv.innerHTML = "<p>받은 초대가 없습니다.</p>";
+          } else {
+            invites.forEach((invite) => {
+              const entry = document.createElement("div");
+              entry.innerHTML = `
+                <p><em>${invite.inviter}</em> 님이 <strong>${invite.diaryName}</strong>에 초대하셨습니다.</p>
+                <button onclick="acceptInvite(${invite.diaryId})">수락</button>
+                <button onclick="declineInvite(${invite.diaryId})">거절</button>
+                <hr/>
+              `;
+              listDiv.appendChild(entry);
+            });
+          }
+
+          document.getElementById("invite-modal").style.display = "block";
+        })
+        .catch((err) => alert(err.message));
+    }
+
+    function closeInvitePopup() {
+      document.getElementById("invite-modal").style.display = "none";
+    }
+
+    function acceptInvite(diaryId) {
+      fetch(`/api/diary/${diaryId}/accept`, { method: "POST" })
+        .then((res) => {
+          if (!res.ok) throw new Error("수락 실패");
+          alert("초대를 수락했습니다.");
+          closeInvitePopup();
+          location.reload();
+        })
+        .catch((err) => alert(err.message));
+    }
+
+    function declineInvite(diaryId) {
+      fetch(`/api/diary/${diaryId}/decline`, { method: "DELETE" })
+        .then((res) => {
+          if (!res.ok) throw new Error("거절 실패");
+          alert("초대를 거절했습니다.");
+          closeInvitePopup();
+          location.reload();
+        })
+        .catch((err) => alert(err.message));
+    }
+  </script>
 </div>
