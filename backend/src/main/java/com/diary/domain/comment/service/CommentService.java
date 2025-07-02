@@ -1,5 +1,15 @@
 package com.diary.domain.comment.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.diary.domain.comment.dto.CommentCreateRequest;
 import com.diary.domain.comment.dto.CommentResponse;
 import com.diary.domain.comment.dto.CommentUpdateRequest;
@@ -12,14 +22,10 @@ import com.diary.domain.member.repository.MemberRepository;
 import com.diary.global.auth.CustomUserDetails;
 import com.diary.global.exception.CustomException;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +34,9 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final DiaryEntryRepository diaryEntryRepository;
     private final MemberRepository memberRepository;
+
+    @PersistenceContext
+    private EntityManager em;
 
     private Member getMemberOrThrow(Long memberId) {
         return memberRepository.findById(memberId)
@@ -39,10 +48,11 @@ public class CommentService {
                 .orElseThrow(() -> new CustomException("일기를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 
+    @Transactional
     public CommentResponse createComment(Long entryId, CommentCreateRequest request, CustomUserDetails userDetails) {
         DiaryEntry entry = getEntryOrThrow(entryId);
 
-        Member member = getMemberOrThrow(request.getMemberId());
+        Member member = getMemberOrThrow(userDetails.getId());
 
         Comment parent = null;
         if (request.getParentCommentId() != null) {
@@ -60,7 +70,11 @@ public class CommentService {
         return CommentResponse.from(commentRepository.save(comment));
     }
 
+    @Transactional
     public List<CommentResponse> getComments(Long entryId) {
+        em.flush();  // 변경 사항을 DB에 반영
+        em.clear();  // 1차 캐시 초기화 (이게 핵심)
+        
         List<Comment> comments = commentRepository.findByDiaryEntryId(entryId);
 
         // 엔티티 → DTO
@@ -86,9 +100,12 @@ public class CommentService {
         return roots;
     }
 
+    @Transactional
     public CommentResponse updateComment(Long commentId, CommentUpdateRequest request, CustomUserDetails userDetails) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
+        System.out.println("작성자: " + comment.getMember().getUserId());
+        System.out.println("현재 로그인 사용자: " + userDetails.getUsername());
 
         if (!comment.getMember().getUserId().equals(userDetails.getUsername())) {
             throw new AccessDeniedException("댓글을 수정할 권한이 없습니다.");
@@ -98,6 +115,7 @@ public class CommentService {
         return CommentResponse.from(comment);
     }
 
+    @Transactional
     public void deleteComment(Long commentId, CustomUserDetails userDetails) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
