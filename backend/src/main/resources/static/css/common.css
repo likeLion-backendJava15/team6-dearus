@@ -7,4 +7,9 @@ button {
   background-color: #e4e4e4;
   color: rgb(33, 49, 38);
   font-weight: bold;
+  font-family: 'Pretendard', sans-serif;
+}
+
+body {
+  font-family: 'Pretendard', sans-serif;
 }
