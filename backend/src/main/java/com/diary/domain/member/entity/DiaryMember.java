@@ -9,12 +9,12 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Getter
-@Setter
 @Table(name = "diary_member")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class DiaryMember {
     @EmbeddedId
     private DiaryMemberId id;

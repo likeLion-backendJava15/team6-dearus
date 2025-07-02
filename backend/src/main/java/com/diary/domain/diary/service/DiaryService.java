@@ -3,6 +3,8 @@ package com.diary.domain.diary.service;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,12 +13,17 @@ import com.diary.domain.diary.dto.DiaryResponse;
 import com.diary.domain.diary.dto.DiaryUpdateRequest;
 import com.diary.domain.diary.entity.Diary;
 import com.diary.domain.diary.repository.DiaryRepository;
+import com.diary.domain.member.repository.DiaryMemberRepository;
 import com.diary.domain.member.repository.MemberRepository;
+import com.diary.global.auth.CustomUserDetails;
 import com.diary.global.exception.CustomException;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.diary.domain.member.entity.DiaryMember;
+import com.diary.domain.member.entity.DiaryMember.Role;
+import com.diary.domain.member.entity.DiaryMemberId;
 import com.diary.domain.member.entity.Member;
 
 @Service
@@ -26,6 +33,7 @@ public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
+    private final DiaryMemberRepository diaryMemberRepository;
 
     // 다이어리 생성 서비스 : 예외처리 완료
     public DiaryResponse createDiary(Long memberId, DiaryCreateRequest requestDto) {
@@ -44,6 +52,17 @@ public class DiaryService {
                 .build();
 
         diaryRepository.save(diary);
+
+        // OWNER로 DiaryMember 등록
+        DiaryMember diaryMember = DiaryMember.builder()
+                .id(new DiaryMemberId(diary.getId(), owner.getId()))
+                .diary(diary)
+                .member(owner)
+                .role(Role.valueOf("OWNER"))
+                .accepted(true)
+                .build();
+
+        diaryMemberRepository.save(diaryMember);
 
         return DiaryResponse.builder()
                 .id(diary.getId())
@@ -66,13 +85,15 @@ public class DiaryService {
                 .collect(Collectors.toList());
     }
 
-    // 다이어리 단일 조회 : 소유권이 없는 유저가 요청 시 비어 있을 경우 404 예외처리 완료
+    public List<Diary> findAllByMember(Long memberId) {
+        return diaryRepository.findByOwnerIdAndIsDeletedFalse(memberId);
+    }
+
+    // 다이어리 단일 조회 : 404 예외처리 완료
     @Transactional(readOnly = true)
     public DiaryResponse getDiary(Long diaryId, Long memberId) {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new CustomException("일기장이 존재하지 않습니다.", HttpStatus.NOT_FOUND)); // 404
-        // 일기장
-        // 없음.
 
         return DiaryResponse.builder()
                 .id(diary.getId())
@@ -82,56 +103,55 @@ public class DiaryService {
     }
 
     // 다이어리 수정 요청 : 권한 403 예외처리 완료
+    @Transactional
     public DiaryResponse updateDiary(Long diaryId, Long memberId, DiaryUpdateRequest requestDto) {
         Diary diary = diaryRepository.findById(diaryId)
-                .orElseThrow(() -> new IllegalArgumentException("일기장이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException("일기장이 존재하지 않습니다.", HttpStatus.NOT_FOUND));
 
-        if (!diary.getOwner().getId().equals(memberId)) {
-            throw new CustomException("해당 일기장에 대해 권한이 없습니다.", HttpStatus.FORBIDDEN);
-        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        Long userId = userDetails.getId();
 
-        Member owner = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        // 권한 체크 - 소속 여부만 확인
+        diaryMemberRepository.findByDiaryIdAndMemberId(diaryId, userId)
+                .orElseThrow(() -> new CustomException("권한 없음.", HttpStatus.FORBIDDEN));
 
-        Diary updatedDiary = Diary.builder()
-                .id(diary.getId())
-                .name(requestDto.getName())
-                .owner(owner) // FK 유지
-                .isDeleted(diary.getIsDeleted())
-                .build();
+        // 직접 수정
+        diary.setName(requestDto.getName());
 
-        diaryRepository.save(updatedDiary);
-
+        // save()는 필요 없음 (영속성 컨텍스트)
         return DiaryResponse.builder()
-                .id(updatedDiary.getId())
-                .name(updatedDiary.getName())
-                .ownerId(updatedDiary.getOwner().getId())
+                .id(diary.getId())
+                .name(diary.getName())
+                .ownerId(diary.getOwner().getId())
                 .build();
     }
 
     // 다이어리 삭제 요청 :
     @Transactional
-    public void deleteDiary(Long diaryId, Long memberId) {
+    public void deleteDiary(Long diaryId) {
         // 1) 다이어리 조회 + 404 예외
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new CustomException("일기장이 존재하지 않습니다.", HttpStatus.NOT_FOUND));
 
-        // 2) 소유자 권한 확인
-        if (!diary.getOwner().getId().equals(memberId)) {
-            throw new CustomException("해당 일기장을 삭제할 권한이 없습니다.", HttpStatus.FORBIDDEN);
-        }
+        // 2) 현재 로그인한 유저 ID 꺼내기
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        Long userId = userDetails.getId();
 
-        // 3) 연관 엔트리 물리 삭제 | 연관 엔트리 Soft Delete 처리 -> entry isDelete?
+        // 3) Diary_Member에서 소속 확인 (Role 체크는 나중)
+        diaryMemberRepository.findByDiaryIdAndMemberId(diaryId, userId)
+                .orElseThrow(() -> new CustomException("삭제 권한이 없습니다.", HttpStatus.FORBIDDEN));
+
+        // 4) 연관 엔트리 orphanRemoval → clear()
         if (diary.getEntries() != null && !diary.getEntries().isEmpty()) {
-            // diary.getEntries()는 orphanRemoval = true 이므로,
-            // 엔트리를 비워주면 JPA가 DELETE 쿼리 날림
             diary.getEntries().clear();
         }
 
-        // 4) 다이어리 자체도 Soft Delete
+        // 5) Soft Delete
         diary.setIsDeleted(true);
 
-        // JPA 변경 감지로 save() 호출 안 해도 됨 → 안전을 위해 명시적 save() 호출도 OK
+        // 변경감지로 save() 생략 가능
         diaryRepository.save(diary);
     }
 }
