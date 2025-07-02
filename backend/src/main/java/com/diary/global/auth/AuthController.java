@@ -1,15 +1,18 @@
 package com.diary.global.auth;
 
-import com.diary.domain.diary.entity.Diary;
-import com.diary.domain.diary.repository.DiaryRepository;
-import jakarta.validation.Valid;
+import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 
-import java.util.List;
+import com.diary.domain.diary.entity.Diary;
+import com.diary.domain.diary.repository.DiaryRepository;
+
+import jakarta.validation.Valid;
 
 @Controller
 public class AuthController {
@@ -20,17 +23,14 @@ public class AuthController {
         this.authService = authService;
         this.diaryRepository = diaryRepository;
     }
-    // 로그인 상태라면 entry_list로, 아니면 환영 페이지
+    // 로그인 상태라면 diary_list로, 아니면 환영 페이지
     @GetMapping("/")
     public String rootRedirect(org.springframework.security.core.Authentication authentication) {
         if (authentication != null && authentication.isAuthenticated()) {
             CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
             List<Diary> diaries = diaryRepository.findAllByOwnerIdAndIsDeletedFalse(user.getId());
 
-            if (!diaries.isEmpty()) {
-                // 첫 번째 다이어리로 바로 보내기
-                return "redirect:/entry/list?diaryId=" + diaries.get(0).getId();
-            }
+            return "redirect:/diary";
         }
         // 비로그인 사용자 혹은 다이어리가 하나도 없으면 welcome 뷰
         return "welcome";
