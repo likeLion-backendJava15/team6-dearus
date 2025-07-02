@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>일기장 멤버 관리</title>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        padding: 30px;
+        background-color: #f9f9f9;
+      }
+
+      h2 {
+        margin-bottom: 20px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      th,
+      td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+      }
+
+      th {
+        background-color: #f0f0f0;
+      }
+
+      tr:hover {
+        background-color: #f7faff;
+      }
+
+      .btn {
+        padding: 6px 10px;
+        font-size: 13px;
+        border-radius: 6px;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .btn-danger {
+        background-color: #e87a7a;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background-color: #d9534f;
+      }
+
+      .invite-form {
+        margin-top: 30px;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+      }
+
+      .invite-form input[type="email"] {
+        width: 70%;
+        padding: 8px;
+        font-size: 14px;
+      }
+
+      .invite-form button {
+        padding: 8px 12px;
+        margin-left: 10px;
+        font-size: 14px;
+        background-color: #4a90e2;
+        color: white;
+        border: none;
+        border-radius: 6px;
+      }
+
+      .invite-form button:hover {
+        background-color: #357ac8;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>👥 멤버 관리</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>닉네임</th>
+          <th>역할</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="member : ${members}">
+          <td th:text="${member.nickname}">닉네임</td>
+          <td>
+            <span th:if="${member.role.name() == 'OWNER'}">👑 Owner</span>
+            <span th:if="${member.role.name() == 'GUEST'}">Guest</span>
+          </td>
+          <td>
+            <button
+              class="btn btn-danger"
+              th:if="${member.role.name() == 'GUEST'}"
+              th:onclick="|kickMember(${diaryId}, ${member.id})|"
+            >
+              🚫 추방
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="invite-form">
+      <h3>📨 새 멤버 초대</h3>
+      <input type="email" id="invite-email" placeholder="이메일 입력" />
+      <button onclick="sendInvite()">초대</button>
+    </div>
+
+    <script>
+      const diaryId = [[${diaryId}]];
+
+      function kickMember(diaryId, memberId) {
+        if (!confirm("정말 추방하시겠습니까?")) return;
+        fetch(`/api/diary/${diaryId}/members/${memberId}`, { method: "DELETE" })
+          .then((res) => {
+            if (!res.ok) throw new Error("추방 실패");
+            alert("추방 완료");
+            location.reload();
+          })
+          .catch((err) => alert(err.message));
+      }
+
+      function sendInvite() {
+        const email = document.getElementById("invite-email").value.trim();
+
+        if (!email) {
+          alert("이메일을 입력해주세요.");
+          return;
+        }
+
+        fetch(`/api/diary/${diaryId}/invite`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error("초대 실패");
+            alert("초대 전송 완료");
+            document.getElementById("invite-email").value = "";
+          })
+          .catch((err) => alert(err.message));
+      }
+    </script>
+  </body>
+</html>
