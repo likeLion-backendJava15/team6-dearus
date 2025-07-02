@@ -1,0 +1,69 @@
+<style>
+  .comment-box {
+    width: 100%;
+    margin-top: 30px;
+    padding: 20px;
+    border-top: 1px solid #ccc;
+  }
+
+  #comment-form textarea {
+    width: 100%;
+    height: 80px;
+    font-size: 14px;
+    padding: 10px;
+    margin-bottom: 10px;
+    resize: vertical;
+  }
+
+  #comment-form button {
+    padding: 7px 15px;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    background-color: #b8b7b7;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .comment-item {
+    margin-bottom: 10px;
+  }
+
+  .comment-item p {
+    margin: 4px 0;
+  }
+
+  .comment-item button {
+    margin-right: 5px;
+    background-color: #b8b7b7;
+  }
+
+  .reply-box {
+    margin-left: 20px;
+  }
+
+  .comment-author {
+    font-weight: bold;
+  }
+</style>
+
+<div class="comment-box" th:fragment="comment-box(entryId)">
+  <h3>🗨️ 댓글 (<span id="comment-count">0</span>)</h3>
+
+  <!-- 댓글 작성 폼 -->
+  <form id="comment-form">
+    <textarea
+      name="content"
+      placeholder="댓글을 입력하세요"
+      required
+    ></textarea>
+    <input type="hidden" name="parentCommentId" value="" />
+    <button type="submit">작성</button>
+  </form>
+
+  <br />
+
+  <!-- 댓글 목록 출력 영역 -->
+  <div id="comment-list"></div>
+</div>
+

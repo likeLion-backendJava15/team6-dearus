@@ -58,6 +58,7 @@ public class TagService {
     }
 
     // 3) 태그 수정
+    @Transactional
     public TagResponse updateTag(Long tagId, TagRequest request) {
         Tag tag = tagRepository.findById(tagId)
                 .orElseThrow(() -> new EntityNotFoundException("태그 번호 없음: " + tagId));
@@ -67,11 +68,19 @@ public class TagService {
     }
 
     // 4) 태그 삭제
+    @Transactional
     public void deleteTag(Long tagId) {
         Tag tag = tagRepository.findById(tagId)
                 .orElseThrow(() -> new EntityNotFoundException("태그 번호 없음: " + tagId));
+
+        // 연결된 일기들에서 이 태그를 제거
+        tag.getEntries().forEach(entry -> entry.getTags().remove(tag));
+        tag.getEntries().clear(); // 양방향 해제
+
         tagRepository.delete(tag);
+
     }
+
 
     // 5) 태그별 일기 조회
     @Transactional(readOnly = true)
@@ -101,18 +110,22 @@ public class TagService {
 
     @Transactional
     public void removeTagFromEntry(Long entryId, Long tagId) {
-        // 일기 조회
         DiaryEntry entry = diaryEntryRepository.findById(entryId)
                 .orElseThrow(() -> new RuntimeException("일기 번호 없음 : " + entryId));
-        // 태그 조회
+
         Tag tag = tagRepository.findById(tagId)
                 .orElseThrow(() -> new RuntimeException("태그 번호 없음 : " + tagId));
 
-        // 태그 제거
-        entry.getTags().remove(tag);
+        entry.getTags().remove(tag); // 관계만 제거
+
+        // 연관된 일기 없으면 태그도 제거
+        if (tag.getEntries().isEmpty()) {
+            tagRepository.delete(tag);
+        }
 
         diaryEntryRepository.save(entry);
     }
+
 
     // Helper: DiaryEntry → EntryResponse
     private EntryResponseDTO toEntryResponseDTO(DiaryEntry e) {

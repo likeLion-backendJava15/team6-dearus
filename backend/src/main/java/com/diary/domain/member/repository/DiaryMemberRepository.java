@@ -3,12 +3,12 @@ package com.diary.domain.member.repository;
 import java.util.List;
 import java.util.Optional;
 
-import com.diary.domain.diary.entity.Diary;
-import com.diary.domain.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.diary.domain.diary.entity.Diary;
 import com.diary.domain.member.entity.DiaryMember;
 import com.diary.domain.member.entity.DiaryMemberId;
+import com.diary.domain.member.entity.Member;
 
 public interface DiaryMemberRepository extends JpaRepository<DiaryMember, DiaryMemberId> {
 
@@ -34,4 +34,7 @@ public interface DiaryMemberRepository extends JpaRepository<DiaryMember, DiaryM
 
     List<DiaryMember> findAllByMember(Member member);
 
+    List<DiaryMember> findByMemberAndAcceptedTrue(Member member);
+
+    List<DiaryMember> findByMemberAndAcceptedFalse(Member member);
 }

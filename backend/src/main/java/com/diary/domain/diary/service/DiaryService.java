@@ -1,6 +1,7 @@
 package com.diary.domain.diary.service;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -13,18 +14,16 @@ import com.diary.domain.diary.dto.DiaryResponse;
 import com.diary.domain.diary.dto.DiaryUpdateRequest;
 import com.diary.domain.diary.entity.Diary;
 import com.diary.domain.diary.repository.DiaryRepository;
+import com.diary.domain.member.entity.DiaryMember;
+import com.diary.domain.member.entity.DiaryMember.Role;
+import com.diary.domain.member.entity.DiaryMemberId;
+import com.diary.domain.member.entity.Member;
 import com.diary.domain.member.repository.DiaryMemberRepository;
 import com.diary.domain.member.repository.MemberRepository;
 import com.diary.global.auth.CustomUserDetails;
 import com.diary.global.exception.CustomException;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import com.diary.domain.member.entity.DiaryMember;
-import com.diary.domain.member.entity.DiaryMember.Role;
-import com.diary.domain.member.entity.DiaryMemberId;
-import com.diary.domain.member.entity.Member;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -89,6 +88,17 @@ public class DiaryService {
         return diaryRepository.findByOwnerIdAndIsDeletedFalse(memberId);
     }
 
+    // 자신이 참여 중인 일기장 전체 조회 (OWNER + GUEST + accepted = true)
+    public List<DiaryResponse> getMyDiaries(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+        return diaryMemberRepository.findByMemberAndAcceptedTrue(member).stream()
+            .filter(dm -> !Boolean.TRUE.equals(dm.getDiary().getIsDeleted())) // 삭제된 일기장은 제외
+            .map(dm -> DiaryResponse.from(dm.getDiary(), dm))
+            .collect(Collectors.toList());
+    }
+
     // 다이어리 단일 조회 : 404 예외처리 완료
     @Transactional(readOnly = true)
     public DiaryResponse getDiary(Long diaryId, Long memberId) {
@@ -140,12 +150,21 @@ public class DiaryService {
         Long userId = userDetails.getId();
 
         // 3) Diary_Member에서 소속 확인 (Role 체크는 나중)
-        diaryMemberRepository.findByDiaryIdAndMemberId(diaryId, userId)
+        DiaryMember diaryMember = diaryMemberRepository.findByDiaryIdAndMemberId(diaryId, userId)
                 .orElseThrow(() -> new CustomException("삭제 권한이 없습니다.", HttpStatus.FORBIDDEN));
 
         // 4) 연관 엔트리 orphanRemoval → clear()
-        if (diary.getEntries() != null && !diary.getEntries().isEmpty()) {
-            diary.getEntries().clear();
+        // 4) 역할별 처리
+        if (diaryMember.getRole() == DiaryMember.Role.OWNER) {
+            // OWNER → soft delete + orphan entry clear
+            if (diary.getEntries() != null && !diary.getEntries().isEmpty()) {
+                diary.getEntries().clear();
+            }
+            diary.setIsDeleted(true);
+            // 변경감지에 의해 save() 생략 가능
+        } else {
+            // GUEST → 일기장 탈퇴 (DiaryMember 삭제)
+            diaryMemberRepository.delete(diaryMember);
         }
 
         // 5) Soft Delete

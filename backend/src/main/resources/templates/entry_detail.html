@@ -13,6 +13,7 @@
         font-size: 24px;
         font-weight: bold;
         margin-bottom: 10px;
+        margin-top: 40px;
       }
       .entry-meta {
         font-size: 14px;
@@ -43,6 +44,8 @@
     </style>
   </head>
   <body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
     <div class="entry-title" th:text="${entry.title}">제목</div>
 
     <div class="entry-meta">
@@ -71,11 +74,6 @@
       </div>
     </div>
 
-    <!-- 대표 이미지 -->
-    <!-- <div th:if="${entry.imageUrl != null}">
-    <img th:src="@{${entry.imageUrl}}" alt="대표 이미지" class="entry-image"/>
-  </div> -->
-
     <!-- HTML 본문 (Toast UI Editor로 작성된 content) -->
     <div class="entry-content" th:utext="${entry.content}"></div>
 
@@ -98,6 +96,10 @@
       </span>
     </div>
 
+    <div
+      th:replace="~{fragments/comment_section :: comment-box(${entry.id})}"
+    ></div>
+
     <script>
       function deleteEntry(entryId, diaryId) {
         if (!confirm("정말 삭제하시겠습니까?")) return;
@@ -116,5 +118,129 @@
           .catch((err) => alert(err.message));
       }
     </script>
+
+    <script th:inline="javascript">
+  const entryId = /*[[${entryId}]]*/ 0;
+  const token = localStorage.getItem("accessToken");
+
+  // 1. 댓글 목록 조회
+  async function loadComments() {
+    console.log("📥 댓글을 불러옵니다");
+    const res = await fetch(`/api/entry/${entryId}/comments`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    console.log("불러온 댓글:", data);
+    renderComments(data);
+  }
+
+  // 2. 댓글 렌더링
+  function renderComments(comments) {
+    const listDiv = document.getElementById("comment-list");
+    listDiv.innerHTML = "";
+    document.getElementById("comment-count").textContent = comments.length;
+
+    // 💡 댓글이 없을 경우 안내 문구 추가
+    if (comments.length === 0) {
+      listDiv.innerHTML = "<p>아직 작성된 댓글이 없습니다.</p>";
+      return;
+    }
+
+    comments.forEach((c) => {
+      const commentDiv = document.createElement("div");
+      commentDiv.className = "comment-item";
+      commentDiv.innerHTML = `
+          <p><span class="comment-author">${c.memberNickname}</span>: ${
+        c.content
+      }</p>
+          <button onclick="showReplyForm(${c.id})">답글</button>
+          <button onclick="editComment(${c.id}, '${c.content.replace(
+        /'/g,
+        "\\'"
+      )}')">수정</button>
+          <button onclick="deleteComment(${c.id})">삭제</button>
+          <div id="children-${c.id}" class="reply-box"></div>
+        `;
+      listDiv.appendChild(commentDiv);
+
+      if (c.children) {
+        c.children.forEach((child) => {
+          const childDiv = document.createElement("div");
+          childDiv.className = "comment-item";
+          childDiv.innerHTML = `
+              <p>↳ <span class="comment-author">${
+                child.memberNickname
+              }</span>: ${child.content}</p>
+              <button onclick="editComment(${
+                child.id
+              }, '${child.content.replace(/'/g, "\\'")}')">수정</button>
+              <button onclick="deleteComment(${child.id})">삭제</button>
+            `;
+          document.getElementById(`children-${c.id}`).appendChild(childDiv);
+        });
+      }
+    });
+  }
+
+  // 3. 댓글 작성
+  document
+    .getElementById("comment-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const content = form.content.value.trim();
+      const parentCommentId = form.parentCommentId.value || null;
+
+      if (!content) return;
+
+      await fetch(`/api/entry/${entryId}/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ content, parentCommentId }),
+      });
+
+      form.reset();
+      loadComments();
+    });
+
+  // 4. 댓글 수정
+  async function editComment(id, oldContent) {
+    const newContent = prompt("댓글 수정", oldContent);
+    if (newContent && newContent !== oldContent) {
+      await fetch(`/api/entry/${entryId}/comments/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: newContent }),
+      });
+      loadComments();
+    }
+  }
+
+  // 5. 댓글 삭제
+  async function deleteComment(id) {
+    if (confirm("댓글을 삭제하시겠습니까?")) {
+      await fetch(`/api/entry/${entryId}/comments/${id}`, {
+        method: "DELETE",
+      });
+      loadComments();
+    }
+  }
+
+  // 답글 작성용
+  function showReplyForm(parentId) {
+    const form = document.getElementById("comment-form");
+    form.parentCommentId.value = parentId;
+    form.content.focus();
+  }
+
+  // 💡 DOMContentLoaded 시점에 댓글 로딩
+  document.addEventListener("DOMContentLoaded", loadComments);
+</script>
+
   </body>
 </html>
