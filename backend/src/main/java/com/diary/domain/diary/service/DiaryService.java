@@ -1,6 +1,7 @@
 package com.diary.domain.diary.service;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -13,18 +14,16 @@ import com.diary.domain.diary.dto.DiaryResponse;
 import com.diary.domain.diary.dto.DiaryUpdateRequest;
 import com.diary.domain.diary.entity.Diary;
 import com.diary.domain.diary.repository.DiaryRepository;
+import com.diary.domain.member.entity.DiaryMember;
+import com.diary.domain.member.entity.DiaryMember.Role;
+import com.diary.domain.member.entity.DiaryMemberId;
+import com.diary.domain.member.entity.Member;
 import com.diary.domain.member.repository.DiaryMemberRepository;
 import com.diary.domain.member.repository.MemberRepository;
 import com.diary.global.auth.CustomUserDetails;
 import com.diary.global.exception.CustomException;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import com.diary.domain.member.entity.DiaryMember;
-import com.diary.domain.member.entity.DiaryMember.Role;
-import com.diary.domain.member.entity.DiaryMemberId;
-import com.diary.domain.member.entity.Member;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -87,6 +86,21 @@ public class DiaryService {
 
     public List<Diary> findAllByMember(Long memberId) {
         return diaryRepository.findByOwnerIdAndIsDeletedFalse(memberId);
+    }
+
+    // 자신이 참여 중인 일기장 전체 조회 (OWNER + GUEST + accepted = true)
+    public List<DiaryResponse> getMyDiaries(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+        List<DiaryMember> diaryMembers = diaryMemberRepository.findByMemberAndAcceptedTrue(member);
+
+        return diaryMembers.stream()
+                .map(dm -> {
+                    Diary diary = dm.getDiary();
+                    return DiaryResponse.from(diary, dm);
+                })
+                .collect(Collectors.toList());
     }
 
     // 다이어리 단일 조회 : 404 예외처리 완료

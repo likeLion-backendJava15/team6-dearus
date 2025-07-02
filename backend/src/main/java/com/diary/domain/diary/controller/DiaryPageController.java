@@ -3,32 +3,26 @@ package com.diary.domain.diary.controller;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.diary.domain.diary.dto.DiaryCreateRequest;
+import com.diary.domain.diary.dto.DiaryResponse;
 import com.diary.domain.diary.entity.Diary;
+import com.diary.domain.diary.repository.DiaryRepository;
 import com.diary.domain.diary.service.DiaryService;
-import com.diary.domain.member.entity.DiaryMember;
-import com.diary.domain.member.entity.Member;
 import com.diary.domain.member.repository.DiaryMemberRepository;
 import com.diary.domain.member.repository.MemberRepository;
 import com.diary.global.auth.CustomUserDetails;
 
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.server.ResponseStatusException;
-
-import com.diary.domain.diary.repository.DiaryRepository;
 
 @Controller
 @RequiredArgsConstructor
@@ -41,22 +35,23 @@ public class DiaryPageController {
     private final DiaryMemberRepository diaryMemberRepository;
 
     @GetMapping
-    public String showDiaryListPage(Model model) {
+    public String showDiaryListPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         // 현재 로그인한 사용자 ID 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        String userId = userDetails.getUsername();
+        Long memberId = userDetails.getMember().getId();
+        List<DiaryResponse> myDiaries = diaryService.getMyDiaries(memberId);
+        // String userId = userDetails.getUsername();
 
-        // 사용자 조회
-        Member member = memberRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        // // 사용자 조회
+        // Member member = memberRepository.findByUserId(userId)
+        //         .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        List<Diary> diaries = diaryMemberRepository.findAllByMember(member).stream()
-                .map(DiaryMember::getDiary)
-                .filter(diary -> !diary.getIsDeleted())
-                .toList();
+        // List<Diary> diaries = diaryMemberRepository.findAllByMember(member).stream()
+        //         .map(DiaryMember::getDiary)
+        //         .filter(diary -> !diary.getIsDeleted())
+        //         .toList();
 
-        model.addAttribute("diaries", diaries);
+        // model.addAttribute("diaries", diaries);
+        model.addAttribute("diaries", myDiaries);
         return "diary_list"; // templates/diary_list.html
     }
 

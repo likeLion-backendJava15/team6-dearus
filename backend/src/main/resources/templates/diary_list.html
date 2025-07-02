@@ -63,11 +63,14 @@
     <ul class="diary-list">
       <li th:each="diary : ${diaries}" class="diary-item">
         <!-- 왼쪽: 이름 -->
-        <a
-          th:href="@{'/entry/list'(diaryId=${diary.id})}"
-          class="diary-name"
-          th:text="${diary.name}"
-        ></a>
+        <div class="diary-info">
+          <a
+            th:href="@{'/entry/list'(diaryId=${diary.id})}"
+            class="diary-name"
+            th:text="${diary.name}"
+          ></a>
+          <span th:if="${diary.isOwner}" class="crown">👑</span>
+        </div>
 
         <!-- 오른쪽: 수정/삭제 -->
         <div style="display: flex; gap: 10px">
