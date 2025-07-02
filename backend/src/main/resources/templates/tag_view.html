@@ -1,129 +1,168 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
     <title>태그 관리</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
     <style>
         :root {
             --primary-color: #4A90E2;
             --secondary-color: #F5F7FA;
             --accent-color: #50E3C2;
             --text-color: #333;
-            --border-radius: 8px;
+            --border-radius: 10px;
             --transition: 0.3s ease;
         }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Pretendard', sans-serif;
             background: var(--secondary-color);
             color: var(--text-color);
-            padding: 2rem;
+            padding: 0;
         }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
         h1 {
-            margin-bottom: 1rem;
+            font-size: 28px;
             color: var(--primary-color);
+            margin-bottom: 1.5rem;
         }
+
         form#createForm {
             display: flex;
             gap: 0.5rem;
             margin-bottom: 1.5rem;
         }
+
         #newTagName {
             flex: 1;
-            padding: 0.5rem;
+            padding: 0.6rem 1rem;
             border: 1px solid #ccc;
             border-radius: var(--border-radius);
-            transition: border-color var(--transition);
+            font-size: 1rem;
         }
+
         #newTagName:focus {
             border-color: var(--primary-color);
             outline: none;
         }
+
         button {
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 0.5rem 1rem;
+            padding: 0.6rem 1.2rem;
             border-radius: var(--border-radius);
+            font-size: 0.95rem;
             cursor: pointer;
             transition: background var(--transition);
         }
+
         button:hover {
             background: var(--accent-color);
         }
+
         ul#tagList {
             display: flex;
             flex-wrap: wrap;
             gap: 1rem;
             list-style: none;
         }
+
         ul#tagList li {
             background: white;
             border-radius: var(--border-radius);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            padding: 0.75rem 1rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+            padding: 0.7rem 1rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.7rem;
+            min-width: 200px;
         }
+
         ul#tagList li span {
             flex: 1;
+            font-size: 1rem;
             cursor: pointer;
         }
+
         .actions button {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
         }
+
         #entriesSection {
-            margin-top: 2rem;
+            margin-top: 2.5rem;
         }
+
         #entriesSection h2 {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             color: var(--primary-color);
         }
+
         ul#entriesList {
             list-style: none;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1rem;
+            gap: 1.5rem;
         }
+
         ul#entriesList li {
             background: white;
             border-radius: var(--border-radius);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
             padding: 1rem;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
         }
+
         ul#entriesList li h3 {
             font-size: 1.1rem;
             color: var(--accent-color);
         }
+
         ul#entriesList li p {
-            flex: 1;
             font-size: 0.95rem;
             line-height: 1.4;
+        }
+
+        /* ✅ header 안 겹치도록 추가 여백 */
+        .container h1 {
+            margin-top: 2rem;
         }
     </style>
 </head>
 <body>
-<h1>태그 관리</h1>
 
-<form id="createForm">
-    <input type="text" id="newTagName" placeholder="새 태그 이름" required />
-    <button type="submit">생성</button>
-</form>
+<!-- ✅ 헤더 가장 상단에 삽입 -->
+<div th:replace="fragments/header :: header"></div>
 
-<ul id="tagList"></ul>
+<div class="container">
+    <h1>태그 관리</h1>
 
-<div id="entriesSection" style="display:none;">
-    <h2 id="entriesHeader"></h2>
-    <ul id="entriesList"></ul>
+    <form id="createForm">
+        <input type="text" id="newTagName" placeholder="새 태그 이름" required />
+        <button type="submit">생성</button>
+    </form>
+
+    <ul id="tagList"></ul>
+
+    <div id="entriesSection" style="display:none;">
+        <h2 id="entriesHeader"></h2>
+        <ul id="entriesList"></ul>
+    </div>
 </div>
 
 <script>
@@ -140,13 +179,13 @@
         const list = tags.map(tag => {
             const selectedStyle = tag.id === selectedTagId ? 'font-weight:bold;' : '';
             return `
-                <li>
-                    <span style="${selectedStyle}" onclick="onTagClick(${tag.id}, '${tag.name}')">${tag.name}</span>
-                    <div class="actions">
-                        <button onclick="startEdit(${tag.id}, '${tag.name}')">수정</button>
-                        <button onclick="removeTag(${tag.id})">삭제</button>
-                    </div>
-                </li>`;
+          <li>
+            <span style="${selectedStyle}" onclick="onTagClick(${tag.id}, '${tag.name}')">${tag.name}</span>
+            <div class="actions">
+              <button onclick="startEdit(${tag.id}, '${tag.name}')">수정</button>
+              <button onclick="removeTag(${tag.id})">삭제</button>
+            </div>
+          </li>`;
         }).join('');
         document.getElementById('tagList').innerHTML = list;
     }
@@ -171,10 +210,10 @@
         const li = [...document.querySelectorAll('#tagList li')]
             .find(node => node.textContent.includes(name));
         li.innerHTML = `
-                <input id="editName" value="${name}" />
-                <button onclick="saveEdit()">저장</button>
-                <button onclick="cancelEdit()">취소</button>
-            `;
+        <input id="editName" value="${name}" />
+        <button onclick="saveEdit()">저장</button>
+        <button onclick="cancelEdit()">취소</button>
+      `;
     }
 
     async function saveEdit() {
@@ -208,10 +247,10 @@
         document.getElementById('entriesHeader').textContent = `#${name} 태그 일기 목록`;
         const entriesHtml = entries.length
             ? entries.map(e => `
-                    <li>
-                        <h3>${e.title}</h3>
-                        <p>${e.content}</p>
-                    </li>`).join('')
+          <li>
+            <h3>${e.title}</h3>
+            <p>${e.content}</p>
+          </li>`).join('')
             : '<li>해당 태그가 달린 일기가 없습니다.</li>';
         document.getElementById('entriesList').innerHTML = entriesHtml;
         document.getElementById('entriesSection').style.display = 'block';
