@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 public class CommentCreateRequest {
 
     private Long parentCommentId;
-    private Long memberId;
+    // private Long memberId;
     private String content;
 }
