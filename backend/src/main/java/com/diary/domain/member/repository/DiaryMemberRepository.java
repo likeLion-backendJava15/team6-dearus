@@ -36,4 +36,5 @@ public interface DiaryMemberRepository extends JpaRepository<DiaryMember, DiaryM
 
     List<DiaryMember> findByMemberAndAcceptedTrue(Member member);
 
+    List<DiaryMember> findByMemberAndAcceptedFalse(Member member);
 }

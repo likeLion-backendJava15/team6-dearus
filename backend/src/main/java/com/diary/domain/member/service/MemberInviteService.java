@@ -3,6 +3,7 @@ package com.diary.domain.member.service;
 import com.diary.domain.diary.entity.Diary;
 import com.diary.domain.diary.repository.DiaryRepository;
 import com.diary.domain.member.dto.InviteRequest;
+import com.diary.domain.member.dto.InviteResponse;
 import com.diary.domain.member.dto.MemberResponse;
 import com.diary.domain.member.entity.DiaryMember;
 import com.diary.domain.member.entity.DiaryMember.Role;
@@ -29,7 +30,9 @@ public class MemberInviteService {
     private final DiaryRepository diaryRepository;
     private final DiaryMemberRepository diaryMemberRepository;
 
-    /** 1. 멤버 초대 **/
+    /**
+     * 1. 멤버 초대 *
+     */
     public void inviteMember(Long diaryId, InviteRequest requestDto) {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new CustomException("일기장이 존재하지 않습니다.", HttpStatus.NOT_FOUND));
@@ -52,7 +55,9 @@ public class MemberInviteService {
         diaryMemberRepository.save(diaryMember);
     }
 
-    /** 2. 초대 수락 **/
+    /**
+     * 2. 초대 수락 *
+     */
     public void acceptInvite(Long diaryId) {
         Long currentUserId = getCurrentUserId();
 
@@ -73,7 +78,9 @@ public class MemberInviteService {
         diaryMemberRepository.save(diaryMember);
     }
 
-    /** 3. 수락된 멤버 목록 조회 **/
+    /**
+     * 3. 수락된 멤버 목록 조회 *
+     */
     public List<MemberResponse> getAcceptedMembers(Long diaryId) {
         if (!diaryRepository.existsById(diaryId)) {
             throw new CustomException("일기장이 존재하지 않습니다.", HttpStatus.NOT_FOUND);
@@ -81,14 +88,16 @@ public class MemberInviteService {
 
         return diaryMemberRepository.findByDiaryIdAndAcceptedTrue(diaryId).stream()
                 .map(dm -> new MemberResponse(
-                        dm.getMember().getId(),
-                        dm.getMember().getNickname(),
-                        dm.getRole()
-                ))
+                dm.getMember().getId(),
+                dm.getMember().getNickname(),
+                dm.getRole()
+        ))
                 .collect(Collectors.toList());
     }
 
-    /** 4. 멤버 추방 **/
+    /**
+     * 4. 멤버 추방 *
+     */
     public void removeMember(Long diaryId, Long userId) {
         DiaryMember diaryMember = diaryMemberRepository.findByDiaryIdAndMemberId(diaryId, userId)
                 .orElseThrow(() -> new CustomException("멤버가 존재하지 않습니다.", HttpStatus.NOT_FOUND));
@@ -96,9 +105,37 @@ public class MemberInviteService {
         diaryMemberRepository.delete(diaryMember);
     }
 
-    public Long getCurrentUserId() {
+
+    // 초대 확인
+    public List<InviteResponse> getMyInvites() {
+        Member currentUser = getCurrentUser();
+
+        List<DiaryMember> pendingInvites = diaryMemberRepository.findByMemberAndAcceptedFalse(currentUser);
+
+        return pendingInvites.stream()
+                .map(dm -> {
+                    Diary diary = dm.getDiary();
+                    Member inviter = diary.getOwner();
+
+                    return new InviteResponse(
+                            diary.getId(),
+                            diary.getName(),
+                            inviter.getNickname() != null ? inviter.getNickname() : inviter.getUserId()
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    private Long getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-        return userDetails.getMember().getId();
+        return userDetails.getId();
+    }
+
+    private Member getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        return memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 }

@@ -42,21 +42,50 @@
         font-size: 13px;
         cursor: pointer;
         border-radius: 10px;
-        background-color: #e4e4e4;
-        color: rgb(33, 49, 38);
+        background-color: #88b5e9;
+        color: rgb(255, 255, 255);
         font-weight: bold;
         text-decoration: none;
         display: inline-block;
         border: none;
       }
+
+      .btn:hover {
+        background-color: #4271a7;
+      }
     </style>
   </head>
   <body>
+    <div th:replace="fragments/header :: header"></div>
+
     <h2>📚 내 일기장</h2>
 
     <div class="button-container">
       <a th:href="@{/diary/form}" class="btn">+ 새 일기장 만들기</a>
       <a th:href="@{/tags}" class="btn">🔖 내 태그 보기</a>
+      <button class="btn" onclick="openInvitePopup()">📬 받은 초대</button>
+      <div
+        id="invite-modal"
+        style="
+          display: none;
+          position: fixed;
+          top: 20%;
+          left: 50%;
+          transform: translate(-50%, 0);
+          background: white;
+          border: 1px solid #ccc;
+          padding: 20px;
+          z-index: 1000;
+        "
+      >
+        <h3>📨 받은 초대 목록</h3>
+        <div id="invite-list">
+          <!-- 여기에 초대 목록이 동적으로 추가됨 -->
+        </div>
+        <button onclick="closeInvitePopup()" style="margin-top: 10px">
+          닫기
+        </button>
+      </div>
     </div>
 
     <hr style="background-color: #cccccc; height: 1px; border: 0" />
@@ -74,24 +103,144 @@
         </div>
 
         <!-- 오른쪽: 수정/삭제 -->
-        <div style="display: flex; gap: 10px">
-          <a th:href="@{/diary/form(editId=${diary.id})}" class="btn"
-            >✏️ 수정</a
+        <div style="display: flex; flex-direction: column; gap: 5px">
+          <!-- 버튼들: 가로로 나열 -->
+          <div style="display: flex; gap: 10px" th:if="${diary.isOwner}">
+            <button class="btn" th:onclick="|toggleInviteForm(${diary.id})|">
+              📨 멤버 초대
+            </button>
+            <a th:href="@{/diary/{id}/members(id=${diary.id})}" class="btn"
+              >👥 멤버 관리</a
+            >
+            <a th:href="@{/diary/form(editId=${diary.id})}" class="btn"
+              >✏️ 수정</a
+            >
+            <button
+              type="button"
+              class="btn"
+              th:onclick="|deleteDiary(${diary.id})|"
+            >
+              🗑️ 삭제
+            </button>
+          </div>
+
+          <!-- 초대 입력창: 버튼 아래에 세로로 표시 -->
+          <div
+            th:attr="id='invite-form-' + ${diary.id}"
+            style="display: none; margin-top: 10px"
           >
-          <button
-            type="button"
-            class="btn"
-            th:onclick="|deleteDiary(${diary.id})|"
-          >
-            🗑️ 삭제
-          </button>
+            <input
+              th:attr="id='invite-email-' + ${diary.id}"
+              type="email"
+              placeholder="초대할 이메일 입력"
+              style="padding: 5px; width: 250px"
+            />
+            <button class="btn" th:onclick="|sendInvite(${diary.id})|">
+              초대
+            </button>
+          </div>
         </div>
       </li>
     </ul>
 
+
+    <!--  --  --  --  -- script --  --  --  -- -->
     <script>
+      // 멤버 초대
+      const diaryId = /*[[${diaryId}]]*/ 0; // Thymeleaf에서 diaryId 주입
+
+      function toggleInviteForm(diaryId) {
+        const form = document.getElementById(`invite-form-${diaryId}`);
+        form.style.display = form.style.display === "none" ? "block" : "none";
+      }
+
+      function sendInvite(diaryId) {
+        const emailInput = document.getElementById(`invite-email-${diaryId}`);
+        const email = emailInput.value.trim();
+
+        if (!email) {
+          alert("초대를 보낼 이메일을 입력해주세요.");
+          return;
+        }
+
+        fetch(`/api/diary/${diaryId}/invite`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: email }),
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error("초대 실패");
+            alert("초대가 성공적으로 전송되었습니다.");
+            emailInput.value = "";
+            toggleInviteForm(diaryId);
+          })
+          .catch((err) => {
+            alert(err.message);
+          });
+      }
+
+      // 초대 확인
+      function openInvitePopup() {
+        fetch("/api/diary/invites")
+          .then((res) => {
+            if (!res.ok) throw new Error("초대 목록을 불러오지 못했습니다.");
+            return res.json();
+          })
+          .then((invites) => {
+            const listDiv = document.getElementById("invite-list");
+            listDiv.innerHTML = "";
+
+            if (invites.length === 0) {
+              listDiv.innerHTML = "<p>받은 초대가 없습니다.</p>";
+            } else {
+              invites.forEach((invite) => {
+                const entry = document.createElement("div");
+                entry.innerHTML = `
+              <p><strong>${invite.diaryName}</strong>에 초대되었습니다.</p>
+              <button onclick="acceptInvite(${invite.diaryId})">수락</button>
+              <button onclick="declineInvite(${invite.diaryId})">거절</button>
+              <hr/>
+            `;
+                listDiv.appendChild(entry);
+              });
+            }
+
+            document.getElementById("invite-modal").style.display = "block";
+          })
+          .catch((err) => alert(err.message));
+      }
+
+      function closeInvitePopup() {
+        document.getElementById("invite-modal").style.display = "none";
+      }
+
+      function acceptInvite(diaryId) {
+        fetch(`/api/diary/${diaryId}/accept`, { method: "POST" })
+          .then((res) => {
+            if (!res.ok) throw new Error("수락 실패");
+            alert("초대를 수락했습니다.");
+            closeInvitePopup();
+            location.reload();
+          })
+          .catch((err) => alert(err.message));
+      }
+
+      function declineInvite(diaryId) {
+        fetch(`/api/diary/${diaryId}/decline`, { method: "DELETE" })
+          .then((res) => {
+            if (!res.ok) throw new Error("거절 실패");
+            alert("초대를 거절했습니다.");
+            closeInvitePopup();
+            location.reload();
+          })
+          .catch((err) => alert(err.message));
+      }
+
+      // 일기장 삭제
       function deleteDiary(diaryId) {
-        if (!confirm("정말 삭제하시겠습니까?")) return;
+        if (!confirm("정말 일기장을 삭제하시겠습니까?")) return;
 
         fetch(`/api/diary/${diaryId}`, {
           method: "DELETE",
