@@ -58,10 +58,37 @@
         gap: 10px;
         margin-top: 20px;
       }
+
+      .title-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .emotion-stats-btn {
+        background-color: #74b9ff;
+        color: white;
+        border: none;
+        padding: 7px 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 13px;
+      }
     </style>
   </head>
   <body>
-    <h2 th:text="'📘 ' + ${diaryName}">일기 목록</h2>
+    <div class="title-container">
+  <h2 th:text="'📘 ' + ${diaryName}">일기 목록</h2>
+  <button
+    type="button"
+    th:onclick="'location.href=\'/emotion/stats?diaryId=' + ${diaryId} + '\';'"
+    class="emotion-stats-btn"
+  >
+    📊 감정 통계 보기
+  </button>
+</div>
+</div>
     <div class="button-container">
       <a th:href="@{'/entry/form'(diaryId=${diaryId})}">
         <button>✍️ 글쓰기</button> </a

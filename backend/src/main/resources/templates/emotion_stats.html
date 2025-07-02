@@ -69,6 +69,23 @@
         border-radius: 4px;
       }
 
+      /* 버튼 스타일 */
+      #backToDiaryListBtn, #openDatePickerBtn {
+        background-color: #74b9ff;
+        color: white;
+        border: none;
+        padding: 7px 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-right: 10px;
+        user-select: none;
+        transition: background-color 0.25s ease;
+      }
+      #backToDiaryListBtn:hover, #openDatePickerBtn:hover {
+        background-color: #0984e3;
+      }
+
       .modal {
         position: fixed;
         z-index: 1000;
@@ -128,19 +145,6 @@
       }
       .date-picker button:hover {
         background-color: #0984e3;
-      }
-
-      #openDatePickerBtn {
-        padding: 8px 16px;
-        border: none;
-        background: #74b9ff;
-        color: white;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-      }
-      #openDatePickerBtn:hover {
-        background: #0984e3;
       }
 
       .total-bar {
@@ -208,7 +212,10 @@
     <div class="container">
       <div class="header-row">
         <h2>전체 감정 통계</h2>
-        <button id="openDatePickerBtn">날짜 선택</button>
+        <div>
+          <button id="backToDiaryListBtn">📖 일기 목록으로</button>
+          <button id="openDatePickerBtn">📅 날짜 선택</button>
+        </div>
       </div>
 
       <div id="datePickerModal" class="modal">
@@ -268,6 +275,11 @@
 
       let stackedUserChart = null;
       let userPieChart = null;
+
+      // 일기 목록으로 돌아가기 버튼 이벤트
+      document.getElementById('backToDiaryListBtn').addEventListener('click', () => {
+        location.href = `/entry/list?diaryId=${diaryId}`;
+      });
 
       function showTooltip(e, text) {
         tooltip.style.opacity = 1;
