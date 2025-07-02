@@ -67,16 +67,16 @@ public class SecurityConfig {
         List<Diary> diaries = diaryRepository.findAllByOwnerIdAndIsDeletedFalse(userId);
 
         // 리다이렉트할 URI 결정
-        String target;
-        if (diaries.isEmpty()) {
-            // 다이어리가 하나도 없으면, 다이어리 생성 전용 뷰로
-            // (원하시면 /welcome 으로 보낼 수도 있고, 바로 /diary 로 보내서 빈 목록 보여줘도 됩니다)
-            target = "/diary";
-        } else {
-            // 이미 다이어리가 있으면, 첫 번째 일기장 클릭 시 진입하는 엔트리 리스트 뷰로
-            // 우리가 새로 만든 뷰 전용 엔드포인트
-            target = "/diary/" + diaries.get(0).getId() + "/entries";
-        }
+        String target = "/diary";
+        // if (diaries.isEmpty()) {
+        //     // 다이어리가 하나도 없으면, 다이어리 생성 전용 뷰로
+        //     // (원하시면 /welcome 으로 보낼 수도 있고, 바로 /diary 로 보내서 빈 목록 보여줘도 됩니다)
+        //     target = "/diary";
+        // } else {
+        //     // 이미 다이어리가 있으면, 첫 번째 일기장 클릭 시 진입하는 엔트리 리스트 뷰로
+        //     // 우리가 새로 만든 뷰 전용 엔드포인트
+        //     target = "/diary/" + diaries.get(0).getId() + "/entries";
+        // }
 
         boolean isAjax = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
         if (isAjax) {
