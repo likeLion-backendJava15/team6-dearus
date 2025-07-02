@@ -26,26 +26,23 @@ import com.diary.domain.member.entity.Member;
 import com.diary.domain.member.repository.MemberRepository;
 import com.diary.domain.tag.entity.Tag;
 import com.diary.domain.tag.repository.TagRepository;
+import com.diary.global.auth.DiaryPermissionChecker;
 import com.diary.global.exception.CustomException;
 import com.diary.global.util.EmotionUtils;
 import com.diary.global.util.HtmlImageParser;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class EntryService {
 
     private final DiaryEntryRepository diaryEntryRepository;
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
     private final TagRepository tagRepository;
-
-    public EntryService(DiaryEntryRepository diaryEntryRepository, DiaryRepository diaryRepository,
-            MemberRepository memberRepository, TagRepository tagRepository) {
-        this.diaryEntryRepository = diaryEntryRepository;
-        this.diaryRepository = diaryRepository;
-        this.memberRepository = memberRepository;
-        this.tagRepository = tagRepository;
-    }
+    private final DiaryPermissionChecker permissionChecker;
 
     private Member getMemberOrThrow(Long memberId) {
         return memberRepository.findById(memberId)
@@ -64,8 +61,12 @@ public class EntryService {
 
     // 일기 등록
     public Long createEntry(EntryCreateRequestDTO requestDTO, Long authorId) throws IOException {
+        Long diaryId = requestDTO.getDiaryId();
+
+        permissionChecker.checkAccess(authorId, diaryId); // 권한 검사
+
         Member author = getMemberOrThrow(authorId);
-        Diary diary = getDiaryOrThrow(requestDTO.getDiaryId());
+        Diary diary = getDiaryOrThrow(diaryId);
 
         String content = requestDTO.getContent();
         // 이미지 URL 파싱 및 이동
@@ -107,7 +108,7 @@ public class EntryService {
                 .diary(diary)
                 .author(author)
                 .title(requestDTO.getTitle())
-                .content(content) // ✅ 수정된 content 사용
+                .content(content) // 수정된 content 사용
                 .imageUrl(resolvedImageUrl)
                 .emotion(requestDTO.getEmotion())
                 .build();
@@ -151,8 +152,8 @@ public class EntryService {
     }
 
     // 일기 목록 조회
-    public List<EntryListResponseDTO> getAllEntriesByDiaryId(Long diaryId) {
-
+    public List<EntryListResponseDTO> getAllEntriesByDiaryId(Long diaryId, Long userId) {
+        permissionChecker.checkAccess(userId, diaryId);
         List<DiaryEntry> entries = diaryEntryRepository.findByDiaryIdOrderByCreatedAtDesc(diaryId);
 
         return entries.stream()
@@ -179,8 +180,10 @@ public class EntryService {
 
     // 일기 상세 조회
     @Transactional(readOnly = true)
-    public EntryResponseDTO getEntryDetail(Long entryId) {
+    public EntryResponseDTO getEntryDetail(Long entryId, Long userId) {
         DiaryEntry entry = getEntryOrThrow(entryId);
+
+        permissionChecker.checkAccess(userId, entry.getDiary().getId());
 
         List<String> tagNames = entry.getTags().stream()
                 .map(Tag::getName)
@@ -205,6 +208,8 @@ public class EntryService {
     // 일기 수정
     public void updateEntry(Long entryId, EntryUpdateRequestDTO requestDto, Long memberId) {
         DiaryEntry entry = getEntryOrThrow(entryId);
+        Long diaryId = entry.getDiary().getId();
+        permissionChecker.checkAccess(memberId, diaryId);
 
         if (!entry.getAuthor().getId().equals(memberId)) {
             throw new CustomException("작성자가 아니므로 수정 불가", HttpStatus.FORBIDDEN);
@@ -287,6 +292,8 @@ public class EntryService {
     // 일기 삭제
     public void deleteEntry(Long entryId, Long memberId) {
         DiaryEntry entry = getEntryOrThrow(entryId);
+        Long diaryId = entry.getDiary().getId();
+        permissionChecker.checkAccess(memberId, diaryId);
 
         if (!entry.getAuthor().getId().equals(memberId)) {
             throw new CustomException("작성자가 아니므로 삭제 불가", HttpStatus.FORBIDDEN);

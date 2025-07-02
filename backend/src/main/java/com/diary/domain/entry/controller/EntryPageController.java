@@ -35,8 +35,10 @@ public class EntryPageController {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 일기장을 찾을 수 없습니다."));
 
+        Long userId = userDetails.getId();
+
         // 일기 목록 조회
-        List<EntryListResponseDTO> entryList = entryService.getAllEntriesByDiaryId(diaryId);
+        List<EntryListResponseDTO> entryList = entryService.getAllEntriesByDiaryId(diaryId, userId);
 
         // 모델에 담기
         model.addAttribute("loginMemberId", userDetails.getId());
@@ -59,7 +61,9 @@ public class EntryPageController {
     // 일기 상세 보기
     @GetMapping("/entry/detail/{entryId}")
     public String showEntryDetail(@PathVariable Long entryId, @AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        EntryResponseDTO dto = entryService.getEntryDetail(entryId);
+        Long userId = userDetails.getId();
+        
+        EntryResponseDTO dto = entryService.getEntryDetail(entryId, userId);
         model.addAttribute("entry", dto);
         model.addAttribute("loginMemberId", userDetails.getId());
         return "entry_detail";
@@ -68,7 +72,9 @@ public class EntryPageController {
     // 일기 수정
     @GetMapping("/entry/edit/{entryId}")
     public String showEditForm(@PathVariable Long entryId, Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        EntryResponseDTO entry = entryService.getEntryDetail(entryId);
+        Long userId = userDetails.getId();
+        
+        EntryResponseDTO entry = entryService.getEntryDetail(entryId, userId);
         ObjectMapper objectMapper = new ObjectMapper();
         String tagsJson = "[]";
         try {

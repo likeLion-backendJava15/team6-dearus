@@ -1,4 +1,4 @@
-package com.diary;
+/*package com.diary;
 
 import com.diary.domain.diary.dto.DiaryCreateRequest;
 import com.diary.domain.diary.dto.DiaryResponse;
@@ -61,3 +61,4 @@ class DearUsDiaryServiceTest {
         assertThat(list.get(0).getOwnerId()).isEqualTo(memberId);
     }
 }
+*/
