@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <title>감정 통계</title>
@@ -7,16 +7,143 @@
     <style>
       body {
         font-family: Arial, sans-serif;
-        max-width: 900px;
-        margin: 40px auto;
-        padding: 20px;
         background-color: #f8f9fa;
         color: #333;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+      }
+      .container {
+        max-width: 900px;
+        width: 100%;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
       }
 
       h2 {
-        margin-top: 40px;
+        margin: 40px 0 20px;
         color: #2d3436;
+        font-size: 1.6rem;
+        font-weight: 600;
+        position: relative;
+        padding-left: 16px;
+        user-select: none;
+      }
+      h2::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 6px;
+        height: 60%;
+        background-color: #74b9ff;
+        border-radius: 4px;
+      }
+
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .header-row h2 {
+        margin: 0;
+        padding-left: 16px;
+        position: relative;
+      }
+
+      .header-row h2::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 6px;
+        height: 60%;
+        background-color: #74b9ff;
+        border-radius: 4px;
+      }
+
+   
+      .modal {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+        display: none;
+      }
+
+      
+      .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 400px;
+        margin: 100px auto;
+        position: relative;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      #closeModalBtn {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        font-size: 24px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      /* 날짜 선택 UI */
+      .date-picker {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .date-picker label {
+        font-weight: 500;
+      }
+      .date-picker input[type="date"] {
+        padding: 6px 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        font-size: 1rem;
+      }
+      .date-picker button {
+        margin-top: 20px;
+        padding: 8px 12px;
+        border: none;
+        background-color: #74b9ff;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.25s ease;
+      }
+      .date-picker button:hover {
+        background-color: #0984e3;
+      }
+
+      
+      #openDatePickerBtn {
+        padding: 8px 16px;
+        border: none;
+        background: #74b9ff;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      #openDatePickerBtn:hover {
+        background: #0984e3;
       }
 
       .total-bar {
@@ -26,28 +153,99 @@
         border-radius: 10px;
         overflow: hidden;
         box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
-        margin-bottom: 30px;
+        position: relative;
+        user-select: none;
       }
-
       .segment {
         height: 100%;
+        min-width: 20px;
+        cursor: pointer;
         position: relative;
+        z-index: 2;
+      }
+
+      #tooltip {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.75);
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.15s ease-in-out;
+        white-space: nowrap;
+        z-index: 1000;
+      }
+
+      .chart-wrapper {
+        max-width: 100%;
+        overflow-x: auto;
+        margin-bottom: 40px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      #stackedUserChart {
+        width: 100% !important;
+        height: 450px !important;
+      }
+
+      #userPieChart {
+        width: 100% !important;
+        height: 530px !important;
+      }
+
+      .pie-wrapper {
+        max-width: 60%;
+        margin: 20px auto 0; 
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
     </style>
   </head>
   <body>
-    <h2>전체 감정 통계</h2>
-    <div class="total-bar" id="total-bar"></div>
+    <div class="container">
+      <div class="header-row">
+        <h2>전체 감정 통계</h2>
+        <button id="openDatePickerBtn">날짜 선택</button>
+      </div>
 
-    <h2>유저별 감정 통계</h2>
-    <canvas id="stackedUserChart" style="width: 100%; max-width: 800px; height: 400px;"></canvas>
+      <div id="datePickerModal" class="modal">
+        <div class="modal-content">
+          <span id="closeModalBtn">&times;</span>
+          <div class="date-picker">
+            <label for="startDate">시작 날짜:</label>
+            <input type="date" id="startDate" />
 
-    <h2>나의 감정 통계</h2>
-    <div style="max-width: 400px; margin-top: 20px;">
-      <canvas id="userPieChart"></canvas>
+            <label for="endDate">종료 날짜:</label>
+            <input type="date" id="endDate" />
+
+            <button id="applyDateFilter">적용</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="total-bar" id="total-bar"></div>
+
+      <h2>유저별 감정 통계</h2>
+      <div class="chart-wrapper">
+        <canvas id="stackedUserChart"></canvas>
+      </div>
+
+      <h2>나의 감정 통계</h2>
+      <div class="pie-wrapper">
+        <canvas id="userPieChart"></canvas>
+      </div>
+
+      <div id="tooltip"></div>
     </div>
 
-    <script>
+    <script th:inline="javascript">
+      const diaryId = "[[${diaryId}]]";
+      const userId = "[[${userId}]]";
+
       const colorMap = {
         행복해: "#ff7675",
         즐거워: "#fab1a0",
@@ -59,102 +257,206 @@
         힘들어: "#a29bfe",
       };
 
-      const diaryId = 2;
-      const userId = 3;
+      const totalBar = document.getElementById("total-bar");
+      const tooltip = document.getElementById("tooltip");
 
-      fetch(`/api/emotion/${diaryId}/user/${userId}/stat`)
-        .then((res) => res.json())
-        .then((data) => {
-          // 전체 감정 가로 막대
-          const totalBar = document.getElementById("total-bar");
-          data.totalcounts.forEach((stat) => {
-            const segment = document.createElement("div");
-            segment.className = "segment";
-            segment.style.width = `${stat.percent}%`;
-            segment.style.backgroundColor = colorMap[stat.emotion] || "#ccc";
-            segment.title = `${stat.emotion} (${stat.percent}%)`;
-            totalBar.appendChild(segment);
-          });
+      const startDateInput = document.getElementById("startDate");
+      const endDateInput = document.getElementById("endDate");
+      const applyBtn = document.getElementById("applyDateFilter");
 
-          // 유저별 감정 통계 (통합 세로 스택 막대)
-          const userNicknames = data.usercounts.map(user => user.nickname);
+      const openDatePickerBtn = document.getElementById("openDatePickerBtn");
+      const datePickerModal = document.getElementById("datePickerModal");
+      const closeModalBtn = document.getElementById("closeModalBtn");
 
-          const emotionList = [
-            "행복해", "즐거워", "감사해", "사랑해",
-            "뿌듯해", "그저그래", "화나", "힘들어"
-          ];
+      let stackedUserChart = null;
+      let userPieChart = null;
 
-          const emotionDatasets = emotionList.map(emotion => {
-            return {
-              label: emotion,
-              data: data.usercounts.map(user => {
-                const found = user.emotionCounts.find(e => e.emotion === emotion);
-                return found ? found.count : 0;
-              }),
-              backgroundColor: colorMap[emotion] || "#ccc",
-              stack: "emotion"
-            };
-          });
+      function showTooltip(e, text) {
+        tooltip.style.opacity = 1;
+        tooltip.style.left = e.pageX + 10 + "px";
+        tooltip.style.top = e.pageY + 10 + "px";
+        tooltip.textContent = text;
+      }
+      function hideTooltip() {
+        tooltip.style.opacity = 0;
+      }
 
-          new Chart(document.getElementById("stackedUserChart"), {
+      function renderTotalBar(totalcounts) {
+        totalBar.innerHTML = "";
+        const total = totalcounts.reduce((sum, e) => sum + e.count, 0);
+
+        totalcounts.forEach((stat) => {
+          const percent = total === 0 ? 0 : (stat.count / total) * 100;
+          const displayPercent =
+            percent > 0 && percent < 1 ? 1 : percent.toFixed(1);
+
+          const segment = document.createElement("div");
+          segment.className = "segment";
+          segment.style.width = `${percent > 0 ? displayPercent : 0}%`;
+          segment.style.backgroundColor = colorMap[stat.emotion] || "#ccc";
+
+          segment.addEventListener("mousemove", (e) =>
+            showTooltip(e, `${stat.emotion} (${percent.toFixed(1)}%)`)
+          );
+          segment.addEventListener("mouseleave", hideTooltip);
+
+          totalBar.appendChild(segment);
+        });
+      }
+
+      function renderUserCharts(data) {
+        const userNicknames = data.usercounts.map((u) => u.nickname);
+        const emotions = [
+          "행복해",
+          "즐거워",
+          "감사해",
+          "사랑해",
+          "뿌듯해",
+          "그저그래",
+          "화나",
+          "힘들어",
+        ];
+
+        const datasets = emotions.map((emotion) => ({
+          label: emotion,
+          data: data.usercounts.map((user) => {
+            const found = user.emotionCounts.find((e) => e.emotion === emotion);
+            return found ? found.count : 0;
+          }),
+          backgroundColor: colorMap[emotion] || "#ccc",
+          stack: "emotion",
+        }));
+
+        if (stackedUserChart) stackedUserChart.destroy();
+        stackedUserChart = new Chart(
+          document.getElementById("stackedUserChart"),
+          {
             type: "bar",
             data: {
               labels: userNicknames,
-              datasets: emotionDatasets
+              datasets: datasets,
             },
             options: {
               responsive: true,
               plugins: {
                 tooltip: {
                   callbacks: {
-                    label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}회`
-                  }
+                    label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y}회`,
+                  },
                 },
-                legend: {
-                  position: "top"
-                }
+                legend: { position: "top" },
               },
               scales: {
                 x: {
-                  stacked: true
+                  stacked: true,
+                  ticks: {
+                    maxRotation: 0,
+                    minRotation: 0,
+                    autoSkip: true,
+                    maxTicksLimit: 20,
+                  },
                 },
                 y: {
                   stacked: true,
                   beginAtZero: true,
-                  ticks: { stepSize: 1 }
-                }
-              }
-            }
-          });
+                  ticks: { stepSize: 1 },
+                },
+              },
+            },
+          }
+        );
 
-          // 선택 유저(나)의 감정 도넛형태
-          const pieLabels = data.selectedUserCount.emotionCounts.map((e) => e.emotion);
-          const pieCounts = data.selectedUserCount.emotionCounts.map((e) => e.count);
-          const pieColors = pieLabels.map((e) => colorMap[e] || "#ccc");
+        const pieLabels = data.selectedUserCount.emotionCounts.map(
+          (e) => e.emotion
+        );
+        const pieCounts = data.selectedUserCount.emotionCounts.map(
+          (e) => e.count
+        );
+        const pieColors = pieLabels.map((e) => colorMap[e] || "#ccc");
 
-          new Chart(document.getElementById("userPieChart"), {
-            type: "doughnut",
-            data: {
-              labels: pieLabels,
-              datasets: [{
+        if (userPieChart) userPieChart.destroy();
+        userPieChart = new Chart(document.getElementById("userPieChart"), {
+          type: "doughnut",
+          data: {
+            labels: pieLabels,
+            datasets: [
+              {
                 data: pieCounts,
                 backgroundColor: pieColors,
-              }],
-            },
-            options: {
-              plugins: {
-                tooltip: {
-                  callbacks: {
-                    label: (ctx) => `${ctx.label}: ${ctx.parsed}회`
-                  }
+              },
+            ],
+          },
+          options: {
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => `${ctx.label}: ${ctx.parsed}회`,
                 },
-                legend: {
-                  position: 'bottom'
-                }
-              }
-            }
-          });
+              },
+              legend: { position: "bottom" },
+            },
+          },
         });
+      }
+
+      function fetchStats(start, end) {
+        const params = new URLSearchParams();
+        if (start) params.append("start", start);
+        if (end) params.append("end", end);
+
+        fetch(
+          `/api/emotion/${diaryId}/user/${userId}/stat?${params.toString()}`
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            renderTotalBar(data.totalcounts);
+            renderUserCharts(data);
+          });
+      }
+
+      function toSeoulISOString(date) {
+        const pad = (n) => n.toString().padStart(2, "0");
+        const year = date.getFullYear();
+        const month = pad(date.getMonth() + 1);
+        const day = pad(date.getDate());
+        const hours = pad(date.getHours());
+        const minutes = pad(date.getMinutes());
+        const seconds = pad(date.getSeconds());
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+      }
+
+      openDatePickerBtn.addEventListener("click", () => {
+        datePickerModal.style.display = "block";
+      });
+
+      closeModalBtn.addEventListener("click", () => {
+        datePickerModal.style.display = "none";
+      });
+
+      window.addEventListener("click", (event) => {
+        if (event.target === datePickerModal) {
+          datePickerModal.style.display = "none";
+        }
+      });
+
+      applyBtn.addEventListener("click", () => {
+        let start = startDateInput.value
+          ? new Date(startDateInput.value)
+          : null;
+        let end = endDateInput.value ? new Date(endDateInput.value) : null;
+
+        if (end) {
+          end.setHours(23, 59, 59, 999);
+        }
+
+        fetchStats(
+          start ? toSeoulISOString(start) : null,
+          end ? toSeoulISOString(end) : null
+        );
+        datePickerModal.style.display = "none";
+      });
+
+      fetchStats();
     </script>
   </body>
 </html>
