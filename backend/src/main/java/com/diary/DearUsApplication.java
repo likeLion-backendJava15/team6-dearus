@@ -38,7 +38,7 @@ public class DearUsApplication {
                 diary.setName("테스트일기장");
                 diary.setOwner(owner);
                 diaryRepository.save(diary);
-                System.out.println("✅ 테스트용 일기장 생성 완료!");
+                System.out.println("테스트용 일기장 생성 완료!");
             }
         };
     }
