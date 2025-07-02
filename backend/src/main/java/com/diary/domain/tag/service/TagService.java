@@ -58,6 +58,7 @@ public class TagService {
     }
 
     // 3) 태그 수정
+    @Transactional
     public TagResponse updateTag(Long tagId, TagRequest request) {
         Tag tag = tagRepository.findById(tagId)
                 .orElseThrow(() -> new EntityNotFoundException("태그 번호 없음: " + tagId));
@@ -67,11 +68,19 @@ public class TagService {
     }
 
     // 4) 태그 삭제
+    @Transactional
     public void deleteTag(Long tagId) {
         Tag tag = tagRepository.findById(tagId)
                 .orElseThrow(() -> new EntityNotFoundException("태그 번호 없음: " + tagId));
+
+        // 연결된 일기들에서 이 태그를 제거
+        tag.getEntries().forEach(entry -> entry.getTags().remove(tag));
+        tag.getEntries().clear(); // 양방향 해제
+
         tagRepository.delete(tag);
+
     }
+
 
     // 5) 태그별 일기 조회
     @Transactional(readOnly = true)
