@@ -5,9 +5,8 @@
     <title>일기장 멤버 관리</title>
     <style>
       body {
-        font-family: "Segoe UI", sans-serif;
         padding: 30px;
-        background-color: #f9f9f9;
+        background-color: #ffffff;
       }
 
       h2 {
@@ -85,6 +84,7 @@
     </style>
   </head>
   <body>
+    <div th:replace="~{fragments/header :: header}"></div>
     <h2>👥 멤버 관리</h2>
 
     <table>
@@ -100,7 +100,7 @@
           <td th:text="${member.nickname}">닉네임</td>
           <td>
             <span th:if="${member.role.name() == 'OWNER'}">👑 Owner</span>
-            <span th:if="${member.role.name() == 'GUEST'}">Guest</span>
+            <span th:if="${member.role.name() == 'GUEST'}">👤 Guest</span>
           </td>
           <td>
             <button
