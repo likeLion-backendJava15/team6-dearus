@@ -42,10 +42,7 @@ public class SecurityConfig {
                         .loginProcessingUrl("/login")
                         // ❶ defaultSuccessUrl 대신 custom successHandler 등록
                         .successHandler(this::loginSuccessHandler)
-                        .failureHandler((req, res, ex) -> {
-                            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            res.getWriter().write("FAIL");
-                        })
+                        .failureUrl("/login?error")
                         .permitAll()
                 )
                 .logout(logout -> logout
