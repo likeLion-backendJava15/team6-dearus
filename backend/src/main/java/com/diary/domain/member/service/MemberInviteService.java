@@ -96,7 +96,7 @@ public class MemberInviteService {
         diaryMemberRepository.delete(diaryMember);
     }
 
-    private Long getCurrentUserId() {
+    public Long getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
         return userDetails.getMember().getId();

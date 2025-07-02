@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.diary.domain.emotion.dto.EmotionCountDTO;
 import com.diary.domain.emotion.dto.EmotionStatResponse;
@@ -18,6 +19,7 @@ public class EmotionStatService {
 
     private final EmotionStatRepositoryCustom emotionStatRepository;
 
+    @Transactional(readOnly = true)
     public EmotionStatResponse getEmotionStatistics(Long diaryId, Long userId, LocalDateTime start, LocalDateTime end) {
         EmotionStatResponse response = emotionStatRepository.getEmotionStatResponse(diaryId, userId, start, end);
 
