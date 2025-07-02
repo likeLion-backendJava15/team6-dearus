@@ -46,8 +46,9 @@ public class DiaryController {
 
     // 다이어리 목록 조회
     @GetMapping
-    public ResponseEntity<List<DiaryResponse>> getDiaryList(@RequestParam Long memberId) {
-        return ResponseEntity.ok(diaryService.getDiaryList(memberId));
+    public ResponseEntity<List<DiaryResponse>> getDiaryList(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long memberId = userDetails.getId();
+        return ResponseEntity.ok(diaryService.getMyDiaries(memberId));
     }
 
     // 다이어리 단일 조회
