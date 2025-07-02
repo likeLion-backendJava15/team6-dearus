@@ -52,17 +52,16 @@ public class DearUsApplication {
             DiaryMemberRepository diaryMemberRepository) {
 
         return args -> {
-        Member owner = memberRepository.findByUserId("testuser")
-            .orElseThrow(() -> new RuntimeException("testuser 없음"));
-
-        if (diaryRepository.findAll().isEmpty()) {
-            Diary diary = new Diary();
-            diary.setName("테스트일기장");
-            diary.setOwner(owner);
-            diaryRepository.save(diary);
-            System.out.println("✅ 테스트용 일기장 생성 완료!");
-        }
-    };
+            if (diaryRepository.findAll().isEmpty()) {
+                Member owner = memberRepository.findById(1L)
+                        .orElseThrow(() -> new RuntimeException("사용자 없음"));
+                Diary diary = new Diary();
+                diary.setName("테스트일기장");
+                diary.setOwner(owner);
+                diaryRepository.save(diary);
+                System.out.println("테스트용 일기장 생성 완료!");
+            }
+        };
     }
 
     public static void main(String[] args) {
