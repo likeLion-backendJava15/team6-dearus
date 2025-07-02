@@ -105,7 +105,6 @@ public class MemberInviteService {
         diaryMemberRepository.delete(diaryMember);
     }
 
-
     // 초대 확인
     public List<InviteResponse> getMyInvites() {
         Member currentUser = getCurrentUser();
