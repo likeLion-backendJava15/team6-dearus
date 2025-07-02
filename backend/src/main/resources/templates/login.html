@@ -96,6 +96,10 @@
     <div class="link">
         아직 계정이 없으신가요? <a th:href="@{/signup}">회원가입</a>
     </div>
+
+    <div th:if="${param.error}">
+      <p style="color: rgb(209, 43, 43)">아이디 또는 비밀번호가 올바르지 않습니다.</p>
+    </div>
 </div>
 </body>
 </html>

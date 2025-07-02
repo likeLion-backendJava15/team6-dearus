@@ -27,11 +27,14 @@ public class Diary {
     private String name;
     
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isDeleted = false; // Soft-Delete
 
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<DiaryEntry> entries = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "diary", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryMember> members = new ArrayList<>();
 
