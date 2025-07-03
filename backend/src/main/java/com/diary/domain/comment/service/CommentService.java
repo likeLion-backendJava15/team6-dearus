@@ -108,7 +108,6 @@ public class CommentService {
         if (!comment.getMember().getUserId().equals(userDetails.getUsername())) {
             throw new AccessDeniedException("댓글을 수정할 권한이 없습니다.");
         }
-
         comment.setContent(request.getContent());
         return CommentResponse.from(comment);
     }
@@ -121,7 +120,6 @@ public class CommentService {
         if (!comment.getMember().getUserId().equals(userDetails.getUsername())) {
             throw new AccessDeniedException("댓글을 삭제할 권한이 없습니다.");
         }
-
         commentRepository.deleteById(commentId);
     }
 }
