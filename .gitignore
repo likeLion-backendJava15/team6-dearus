@@ -3,3 +3,12 @@ HELP.md
 ### VS Code ###
 .vscode/
 .DS_Store
+
+.metadata/
+*.log
+*.tmp
+*.bak
+*.swp
+
+*/temp-uploads/*
+*/uploads/*

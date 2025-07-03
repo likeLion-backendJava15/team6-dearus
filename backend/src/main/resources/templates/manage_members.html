@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>일기장 멤버 관리</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}" />
+    <link rel="stylesheet" th:href="@{/css/manage_member.css}" />
+  </head>
+  <body>
+    <div th:replace="~{fragments/header :: header}"></div>
+    <h2>👥 멤버 관리</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>닉네임</th>
+          <th>역할</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="member : ${members}">
+          <td th:text="${member.nickname}">닉네임</td>
+          <td>
+            <span th:if="${member.role.name() == 'OWNER'}">👑 Owner</span>
+            <span th:if="${member.role.name() == 'GUEST'}">👤 Guest</span>
+          </td>
+          <td>
+            <button
+              class="btn btn-danger"
+              th:if="${member.role.name() == 'GUEST'}"
+              th:onclick="|kickMember(${diaryId}, ${member.id})|"
+            >
+              🚫 추방
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="invite-form">
+      <h3>📨 새 멤버 초대</h3>
+      <input type="email" id="invite-email" placeholder="이메일 입력" />
+      <button onclick="sendInvite()">초대</button>
+    </div>
+
+    <!-- 전역 diaryId 주입 -->
+    <script th:inline="javascript">
+      window.diaryId = [[${diaryId}]];
+    </script>
+
+    <!-- 외부 JS 로딩 -->
+    <script th:src="@{/js/manage_member.js}"></script>
+  </body>
+</html>

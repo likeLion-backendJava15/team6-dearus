@@ -1,0 +1,19 @@
+<div class="comment-box" data-entry-id="[[${entry.id}]]" th:fragment="comment-box(entryId)">
+  <!-- 댓글 작성 폼 -->
+  <form id="comment-form">
+    <textarea
+      name="content"
+      placeholder="댓글을 입력하세요"
+      required
+    ></textarea>
+    <input type="hidden" name="parentCommentId" value="" />
+    
+  </form>
+
+  <button class="comm-wrt-btn1" type="submit" form="comment-form">작성</button>
+  <br />
+
+  <!-- 댓글 목록 출력 영역 -->
+  <div id="comment-list"></div>
+</div>
+

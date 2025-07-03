@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>감정 통계</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" th:href="@{/css/common.css}" />
+    <link rel="stylesheet" th:href="@{/css/emotion.css}" />
+  </head>
+  <body>
+    <div th:replace="~{fragments/header :: header}"></div>
+    <div class="container">
+      <div class="header-row">
+        <h2>전체 감정 통계</h2>
+        <div>
+          <button id="backToDiaryListBtn">📖 일기 목록으로</button>
+          <button id="openDatePickerBtn">📅 날짜 선택</button>
+        </div>
+      </div>
+
+      <div id="datePickerModal" class="modal">
+        <div class="modal-content">
+          <span id="closeModalBtn">&times;</span>
+          <div class="date-picker">
+            <label for="startDate">시작 날짜:</label>
+            <input type="date" id="startDate" />
+
+            <label for="endDate">종료 날짜:</label>
+            <input type="date" id="endDate" />
+
+            <button id="applyDateFilter">적용</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="total-bar" id="total-bar"></div>
+
+      <h2>유저별 감정 통계</h2>
+      <div class="chart-wrapper">
+        <canvas id="stackedUserChart"></canvas>
+      </div>
+
+      <h2>나의 감정 통계</h2>
+      <div class="pie-wrapper">
+        <canvas id="userPieChart"></canvas>
+      </div>
+
+      <div id="tooltip"></div>
+    </div>
+
+    <script th:inline="javascript">
+      window.diaryId = "[[${diaryId}]]";
+    </script>
+
+    <script th:src="@{/js/emotion.js}"></script>
+  </body>
+</html>

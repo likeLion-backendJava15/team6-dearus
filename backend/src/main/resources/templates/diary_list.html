@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>내 일기장</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}" />
+    <link rel="stylesheet" th:href="@{/css/list.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+    />
+    <style>
+      .button-container {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <h2 style="color: #4271a7">📚 내 일기장</h2>
+
+    <div class="button-container">
+      <a th:href="@{/diary/form}" class="btn">+ 새 일기장 만들기</a>
+      <a th:href="@{/tags}" class="btn">🔖 내 태그 보기</a>
+    </div>
+
+    <hr style="background-color: #cccccc; height: 1px; border: 0" />
+
+    <ul class="diary-list">
+      <li th:each="diary : ${diaries}" class="diary-item">
+        <!-- 왼쪽: 이름 -->
+        <div class="diary-info">
+          <span th:if="${diary.isOwner}" class="crown">👑</span>
+          <a
+            th:href="@{'/entry/list'(diaryId=${diary.id})}"
+            class="diary-name"
+            th:text="${diary.name}"
+          ></a>
+        </div>
+
+        <!-- 오른쪽: 수정/삭제 -->
+        <div style="display: flex; flex-direction: column; gap: 5px">
+          <!-- 버튼들: 가로로 나열 -->
+          <div style="display: flex; gap: 10px" th:if="${diary.isOwner}">
+            <button class="btn" th:onclick="|toggleInviteForm(${diary.id})|">
+              📨 멤버 초대
+            </button>
+            <a th:href="@{/diary/{id}/members(id=${diary.id})}" class="btn"
+              >👥 멤버 관리</a
+            >
+            <a th:href="@{/diary/form(editId=${diary.id})}" class="btn"
+              >✏️ 수정</a
+            >
+            <button
+              type="button"
+              class="btn"
+              th:onclick="|deleteDiary(${diary.id})|"
+            >
+              🗑️ 삭제
+            </button>
+          </div>
+
+          <!-- 초대 입력창: 버튼 아래에 세로로 표시 -->
+          <div
+            th:attr="id='invite-form-' + ${diary.id}"
+            style="display: none; margin-top: 10px"
+          >
+            <input
+              th:attr="id='invite-email-' + ${diary.id}"
+              type="email"
+              placeholder="초대할 이메일 입력"
+              style="width: 250px"
+            />
+            <button class="btn" th:onclick="|sendInvite(${diary.id})|">
+              초대
+            </button>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <script th:inline="javascript">
+      const diaryId = [[${diaryId}]];
+    </script>
+    <script th:src="@{/js/diary_list.js}"></script>
+  </body>
+</html>

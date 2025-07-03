@@ -4,6 +4,13 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+.metadata/
+*.log
+*.tmp
+*.bak
+*.swp
+
+
 ### STS ###
 .apt_generated
 .classpath
@@ -31,3 +38,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+/src/main/resources/application.yml
+/src/main/resources/data.sql
+
+

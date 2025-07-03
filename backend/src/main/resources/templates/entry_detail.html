@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title th:text="${entry.title}">일기 상세</title>
+
+    <link rel="stylesheet" th:href="@{/css/common.css}" />
+    <link rel="stylesheet" th:href="@{/css/entry.css}" />
+    <link rel="stylesheet" th:href="@{/css/comment.css}" />
+  </head>
+  <body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="entry-title" th:text="${entry.title}">제목</div>
+
+    <div class="entry-meta">
+      <span th:text="'작성자: ' + ${entry.authorNickname}"></span> |
+      <span th:text="${entry.emotionEmoji} + ${entry.emotion}"></span> |
+      <span th:text="${#temporals.format(entry.createdAt, 'yyyy-MM-dd HH:mm')}"
+        >작성일</span
+      >
+    </div>
+
+    <!-- 본인이 작성한 경우에만 표시 -->
+    <div
+      th:if="${entry.authorId == loginMemberId}"
+      style="margin-top: 10px; margin-bottom: 10px"
+    >
+      <div style="display: flex; gap: 10px">
+        <!-- 수정 버튼 -->
+        <form th:action="@{/entry/edit/{id}(id=${entry.id})}" method="get">
+          <button type="submit">✏️ 수정</button>
+        </form>
+
+        <!-- 삭제 버튼 -->
+        <button th:onclick="|deleteEntry(${entry.id}, ${entry.diaryId})|">
+          🗑️ 삭제
+        </button>
+      </div>
+    </div>
+
+    <!-- HTML 본문 (Toast UI Editor로 작성된 content) -->
+    <div class="entry-content" th:utext="${entry.content}"></div>
+
+    <div>
+      <br />
+      <hr style="background-color: #cccccc; height: 1px; border: 0" />
+      <br />
+      <span
+        th:each="tag : ${entry.tags}"
+        th:text="${tag}"
+        class="tag-item"
+        style="
+          background: #e0f3f1;
+          margin-right: 5px;
+          padding: 5px 10px;
+          border-radius: 12px;
+          font-size: 14px;
+        "
+      >
+      </span>
+    </div>
+    <div style="margin-top: 2rem">
+      <h3>🗨️ 댓글 (<span id="comment-count">0</span>)</h3>
+      <div
+        th:replace="~{fragments/comment_section :: comment-box(${entry.id})}"
+      ></div>
+    </div>
+
+    <script th:inline="javascript">
+      window.diaryId = [[${diaryId}]];
+    </script>
+
+    <script th:src="@{/js/entry_list.js}"></script>
+    <script th:src="@{/js/comments.js}" defer></script>
+  </body>
+</html>

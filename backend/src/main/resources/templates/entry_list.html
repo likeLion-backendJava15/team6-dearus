@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>일기 목록</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}" />
+    <link rel="stylesheet" th:href="@{/css/list.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+    />
+  </head>
+  <body>
+    <div th:replace="~{fragments/header :: header}"></div>
+    <div class="title-container">
+      <h2 th:text="'📘 ' + ${diaryName}" style="color: #4271a7">일기 목록</h2>
+
+      <div class="button-container">
+        <a th:href="@{'/entry/form'(diaryId=${diaryId})}">
+          <button class="write-btn">✍️ 글쓰기</button>
+        </a>
+        <button
+          type="button"
+          th:onclick="'location.href=\'/emotion/stats?diaryId=' + ${diaryId} + '\';'"
+          class="write-btn"
+        >
+          📊 감정 통계 보기
+        </button>
+      </div>
+    </div>
+
+    <hr style="background-color: #cccccc; height: 1px; border: 0" />
+
+    <ul class="entry-list">
+      <li
+        th:each="entry : ${entryList}"
+        class="entry-item"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+        "
+      >
+        <!-- 왼쪽: 제목 + 메타 + 태그 -->
+        <div style="flex: 1">
+          <span th:text="${entry.emotionEmoji}"></span>
+
+          <a
+            th:href="@{'/entry/detail/' + ${entry.id}}"
+            class="entry-title"
+            th:text="${entry.title}"
+          ></a>
+
+          <div class="entry-meta">
+            <span th:text="'작성자: ' + ${entry.authorNickname}"></span> |
+            <span
+              th:text="${#temporals.format(entry.createdAt, 'yyyy-MM-dd HH:mm')}"
+            ></span>
+          </div>
+
+          <div style="margin-top: 5px">
+            <span
+              th:each="tag : ${entry.tags}"
+              th:text="'#' + ${tag}"
+              class="tag-item"
+            ></span>
+          </div>
+        </div>
+
+        <!-- 오른쪽: 수정/삭제 버튼 -->
+        <div
+          th:if="${entry.authorId == loginMemberId}"
+          style="white-space: nowrap; margin-left: 10px"
+        >
+          <form
+            th:action="@{/entry/edit/{id}(id=${entry.id})}"
+            method="get"
+            style="display: inline"
+          >
+            <button type="submit">✏️ 수정</button>
+          </form>
+          <button
+            type="button"
+            th:onclick="|deleteEntry(${entry.id}, ${diaryId})|"
+          >
+            🗑️ 삭제
+          </button>
+        </div>
+      </li>
+    </ul>
+
+    <script th:inline="javascript">
+      window.diaryId = [[${diaryId}]];
+    </script>
+
+    <script th:src="@{/js/entry_list.js}"></script>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>태그 관리</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}" />
+    <link rel="stylesheet" th:href="@{/css/tag_view.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+    />
+  </head>
+  <body>
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container">
+      <h1>태그 관리</h1>
+
+      <form id="createForm">
+        <input
+          type="text"
+          id="newTagName"
+          placeholder="새 태그 이름"
+          required
+        />
+        <button type="submit">생성</button>
+      </form>
+
+      <ul id="tagList"></ul>
+
+      <div id="entriesSection" style="display: none">
+        <h2 id="entriesHeader"></h2>
+        <ul id="entriesList"></ul>
+      </div>
+    </div>
+
+    <script th:src="@{/js/tag.js}"></script>
+  </body>
+</html>
