@@ -10,81 +10,9 @@
       href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css"
     />
     <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
-    />
-    <style>
-      body {
-        padding: 20px;
-        font-family: "Pretendard", sans-serif;
-      }
 
-      input,
-      select {
-        display: block;
-        margin-bottom: 15px;
-        margin-top: 10px;
-
-        padding: 10px;
-        font-size: 16px;
-        border: 1px solid #888;
-        border-radius: 10px;
-      }
-
-      input {
-        width: 60vh;
-        margin-bottom: 20px;
-      }
-
-      #editor {
-        margin-bottom: 20px;
-      }
-
-      .tag-item {
-        background-color: #e0f3f1;
-        padding: 6px 10px;
-        border-radius: 10px;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 14px;
-        white-space: nowrap;
-      }
-
-      .tag-item span {
-        display: inline;
-      }
-
-      .tag-item button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #888;
-        font-size: 16px;
-        line-height: 1;
-        font-weight: bold;
-        padding-right: 3px;
-        margin: 0%;
-      }
-
-      .entry-btn,
-      .btn {
-        margin-top: 10px;
-        margin-bottom: 10px;
-        padding: 10px 30px;
-        font-size: 16px;
-        cursor: pointer;
-        border-radius: 10px;
-        background-color: #88b5e9;
-        color: rgb(255, 255, 255);
-        font-weight: bold;
-        text-decoration: none;
-        display: inline-block;
-        border: none;
-        transition: background-color 0.2s ease;
-      }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/common.css}" />
+    <link rel="stylesheet" th:href="@{/css/entry_form.css}" />
   </head>
   <div>
     <div th:replace="~{fragments/header :: header}"></div>
@@ -226,7 +154,7 @@
           label.textContent = tag;
 
           const deleteBtn = document.createElement("button");
-          deleteBtn.className = "entry-btn";
+          deleteBtn.className = "tag-btn";
           deleteBtn.innerHTML = "&times;";
           deleteBtn.onclick = () => {
             const index = tags.indexOf(tag);

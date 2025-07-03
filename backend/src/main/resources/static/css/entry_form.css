@@ -1,0 +1,54 @@
+input,
+select {
+  display: block;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+}
+
+select {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+input {
+  width: 60vh;
+  margin-bottom: 20px;
+}
+
+#editor {
+  margin-bottom: 20px;
+}
+
+.tag-item {
+  background-color: #e0f3f1;
+  padding: 6px 10px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.tag-item span {
+  display: inline;
+}
+
+.entry-btn {
+  padding: 10px 30px;
+  font-size: 16px;
+}
+
+.tag-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  font-size: 16px;
+  line-height: 1;
+  font-weight: bold;
+  padding-right: 3px;
+  margin: 0%;
+}
