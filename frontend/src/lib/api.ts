@@ -62,6 +62,8 @@ export const getDiaryMembers = (diaryId: number) =>
 export const removeMember = (diaryId: number, userId: number) =>
   api.delete(`/diary/${diaryId}/members/${userId}`);
 
+export const getMyInvites = () => api.get('/diary/invites');
+
 // ------------------------
 // 📌 3. 일기 (Entry)
 // ------------------------
