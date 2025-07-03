@@ -89,41 +89,10 @@
       </li>
     </ul>
 
-    <!-- 감정별 이모지 매핑 스크립트 -->
     <script th:inline="javascript">
-      /*<![CDATA[*/
-      function getEmotionEmoji(emotion) {
-        const map = {
-          행복해: "😊",
-          즐거워: "😄",
-          감사해: "🙏",
-          사랑해: "❤️",
-          뿌듯해: "😌",
-          그저그래: "😐",
-          화나: "😡",
-          힘들어: "😫",
-        };
-        return map[emotion] || "";
-      }
-      /*]]>*/
+      window.diaryId = [[${diaryId}]];
     </script>
-    <script>
-      function deleteEntry(entryId, diaryId) {
-        if (!confirm("정말 삭제하시겠습니까?")) return;
 
-        fetch(`/api/entry/${entryId}`, {
-          method: "DELETE",
-        })
-          .then((res) => {
-            if (!res.ok) throw new Error("삭제 실패");
-            return res.json();
-          })
-          .then(() => {
-            alert("삭제 완료");
-            location.href = `/entry/list?diaryId=${diaryId}`;
-          })
-          .catch((err) => alert(err.message));
-      }
-    </script>
+    <script th:src="@{/js/entry_list.js}"></script>
   </body>
 </html>
