@@ -69,6 +69,9 @@
 
     <script th:inline="javascript">
       window.diaryId = [[${diaryId}]];
+      window.entryId = [[${entry.id}]];
+      window.token = localStorage.getItem("accessToken");
+      window.loginMemberId = [[${loginMemberId}]];
     </script>
 
     <script th:src="@{/js/entry_list.js}"></script>
