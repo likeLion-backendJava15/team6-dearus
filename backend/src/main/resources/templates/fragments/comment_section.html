@@ -1,4 +1,4 @@
-<div class="comment-box" th:fragment="comment-box(entryId)">
+<div class="comment-box" data-entry-id="[[${entry.id}]]" th:fragment="comment-box(entryId)">
   <!-- 댓글 작성 폼 -->
   <form id="comment-form">
     <textarea

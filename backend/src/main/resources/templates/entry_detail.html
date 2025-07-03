@@ -127,7 +127,7 @@
       }
     </script>
 
-    <script th:inline="javascript">
+    <!-- <script th:inline="javascript">
       const entryId = /*[[${entryId}]]*/ 0;
       const token = localStorage.getItem("accessToken");
 
@@ -338,6 +338,12 @@
       }
       // 💡 DOMContentLoaded 시점에 댓글 로딩
       document.addEventListener("DOMContentLoaded", loadComments);
+    </script> -->
+    <script th:inline="javascript">
+      const entryId = /*[[${entry.id}]]*/ 0;
+      const loginMemberId = /*[[${loginMemberId}]]*/ 0;
+      const token = localStorage.getItem("accessToken");
     </script>
+    <script th:src="@{/js/comments.js}" defer></script>
   </body>
 </html>

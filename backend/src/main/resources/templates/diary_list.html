@@ -70,6 +70,16 @@
         margin-top: 10px;
         margin-bottom: 10px;
       }
+
+      input {
+        font-family: "Pretendard", sans-serif;
+        padding: 10px;
+        padding-left: 15px;
+        font-size: 16px;
+        width: 300px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+      }
     </style>
   </head>
   <body>
@@ -88,12 +98,12 @@
       <li th:each="diary : ${diaries}" class="diary-item">
         <!-- 왼쪽: 이름 -->
         <div class="diary-info">
+          <span th:if="${diary.isOwner}" class="crown">👑</span>
           <a
             th:href="@{'/entry/list'(diaryId=${diary.id})}"
             class="diary-name"
             th:text="${diary.name}"
           ></a>
-          <span th:if="${diary.isOwner}" class="crown">👑</span>
         </div>
 
         <!-- 오른쪽: 수정/삭제 -->
@@ -127,7 +137,7 @@
               th:attr="id='invite-email-' + ${diary.id}"
               type="email"
               placeholder="초대할 이메일 입력"
-              style="padding: 5px; width: 250px"
+              style="width: 250px"
             />
             <button class="btn" th:onclick="|sendInvite(${diary.id})|">
               초대
@@ -163,14 +173,23 @@
           },
           body: JSON.stringify({ email: email }),
         })
-          .then((res) => {
-            if (!res.ok) throw new Error("초대 실패");
+          .then(async (res) => {
+            if (!res.ok) {
+              let errorMessage = "초대 실패";
+              try {
+                const errorData = await res.json();
+                if (errorData.message) errorMessage = errorData.message;
+              } catch (err) {
+                console.warn("JSON 파싱 실패:", err);
+              }
+              throw new Error(errorMessage);
+            }
             alert("초대가 성공적으로 전송되었습니다.");
             emailInput.value = "";
             toggleInviteForm(diaryId);
           })
           .catch((err) => {
-            alert(err.message);
+            alert("❗ Error : " + err.message);
           });
       }
 
