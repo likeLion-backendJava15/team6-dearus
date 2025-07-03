@@ -4,10 +4,14 @@
     <meta charset="UTF-8" />
     <title>일기 목록</title>
     <link rel="stylesheet" th:href="@{/css/entry.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+    />
     <style>
       body {
         padding: 20px;
-        font-family: sans-serif;
+        font-family: "Pretendard", sans-serif;
       }
       .entry-list {
         list-style: none;
@@ -48,7 +52,6 @@
       .button-container {
         display: flex;
         gap: 10px;
-        margin-top: 20px;
       }
 
       .write-btn {
@@ -67,8 +70,8 @@
       }
 
       .write-btn:hover {
-        background-color: #4271a7;
-        color: #f2f6ff;
+        background-color: #88b5e9;
+        color: #ffffff;
       }
 
       button,
@@ -84,6 +87,7 @@
         display: inline-block;
         border: none;
         transition: background-color 0.2s ease;
+      }
 
       .title-container {
         display: flex;
@@ -100,29 +104,26 @@
         cursor: pointer;
         font-weight: bold;
         font-size: 13px;
-
       }
     </style>
   </head>
   <body>
-
     <div th:replace="~{fragments/header :: header}"></div>
     <div class="title-container">
-  <h2 th:text="'📘 ' + ${diaryName}">일기 목록</h2>
-  <button
-    type="button"
-    th:onclick="'location.href=\'/emotion/stats?diaryId=' + ${diaryId} + '\';'"
-    class="emotion-stats-btn"
-  >
-    📊 감정 통계 보기
-  </button>
-</div>
-</div>
-    <div class="button-container">
-      <a th:href="@{'/entry/form'(diaryId=${diaryId})}">
-        <button class="write-btn">✍️ 글쓰기</button> </a
-      ><!--
-  -->
+      <h2 th:text="'📘 ' + ${diaryName}" style="color: #4271a7">일기 목록</h2>
+
+      <div class="button-container">
+        <a th:href="@{'/entry/form'(diaryId=${diaryId})}">
+          <button class="write-btn">✍️ 글쓰기</button>
+        </a>
+        <button
+          type="button"
+          th:onclick="'location.href=\'/emotion/stats?diaryId=' + ${diaryId} + '\';'"
+          class="write-btn"
+        >
+          📊 감정 통계 보기
+        </button>
+      </div>
     </div>
 
     <hr style="background-color: #cccccc; height: 1px; border: 0" />

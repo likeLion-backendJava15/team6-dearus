@@ -6,10 +6,14 @@
       일기장
     </title>
     <link rel="stylesheet" th:href="@{/css/common.css}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+    />
     <style>
       body {
         padding: 20px;
-        font-family: sans-serif;
+        font-family: "Pretendard", sans-serif;
       }
 
       input {
@@ -18,7 +22,7 @@
         width: 300px;
       }
 
-      button {
+      .btn {
         margin-top: 10px;
         padding: 10px 20px;
         font-size: 14px;
@@ -31,7 +35,8 @@
     </style>
   </head>
   <body>
-    <h2
+    <div th:replace="~{fragments/header :: header}"></div>
+    <h2 style="color: #4271a7" 
       th:text="${editMode} ? '✏️ 일기장 이름 수정' : '📚 새 일기장 생성'"
     ></h2>
 
@@ -50,12 +55,13 @@
       <button
         type="button"
         id="submitBtn"
+        class="btn"
         th:text="${editMode} ? '수정' : '생성'"
       ></button>
     </div>
 
     <br />
-    <a th:href="@{/diary}"><button>← 목록으로</button></a>
+    <a th:href="@{/diary}"><button class="btn">← 목록으로</button></a>
 
     <!-- JS로 POST or PUT 요청 처리 -->
     <script th:inline="javascript">

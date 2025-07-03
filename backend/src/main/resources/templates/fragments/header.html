@@ -9,7 +9,9 @@
 
     <!-- 우측: 사용자 정보 및 네비게이션 -->
     <div class="right">
-      <span class="user" th:text="${#authentication.name}">user</span>
+      <span class="user" th:text="${#authentication.principal.nickname}"
+        >user</span
+      >
       <span>님 환영합니다!</span>
 
       <span class="divider">|</span>
@@ -28,7 +30,10 @@
     </div>
   </header>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+  />
 
   <!-- 초대 모달 -->
   <div id="invite-modal" class="invite-modal">
@@ -48,7 +53,7 @@
       border-bottom: 1px solid #e0e0e0;
       box-shadow: 0 3px rgba(158, 177, 228, 0.05);
       height: 80px;
-      font-family: 'Pretendard', sans-serif;
+      font-family: "Pretendard", sans-serif;
       margin-bottom: 2.5rem;
     }
 
@@ -74,7 +79,7 @@
     }
 
     .nav-link {
-      font-family: 'Pretendard', sans-serif;
+      font-family: "Pretendard", sans-serif;
       text-decoration: none;
       background: none;
       border: none;
@@ -93,7 +98,7 @@
     }
 
     .btn-logout {
-      font-family: 'Pretendard', sans-serif;
+      font-family: "Pretendard", sans-serif;
       background: none;
       border: none;
       color: #888;
@@ -112,16 +117,19 @@
     .invite-modal {
       display: none;
       position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translate(-50%, 0);
+      top: 15%;
+      left: 80%;
       background: white;
       border: 1px solid #ccc;
       border-radius: 10px;
+      border-top: none;
+      border-top-left-radius: 0px;
+      border-top-right-radius: 0px;
       padding: 20px;
       z-index: 1000;
-      max-width: 300px;
-      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+      max-width: max-content;
+      min-width: 25vh;
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
     }
 
     .modal-close-btn {

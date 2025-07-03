@@ -10,20 +10,31 @@
       href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css"
     />
     <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
-
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+    />
     <style>
       body {
         padding: 20px;
+        font-family: "Pretendard", sans-serif;
       }
+
       input,
-      select,
-      button {
+      select {
         display: block;
         margin-bottom: 15px;
         margin-top: 10px;
-        width: 100%;
+
         padding: 10px;
         font-size: 16px;
+        border: 1px solid #888;
+        border-radius: 10px;
+      }
+
+      input {
+        width: 60vh;
+        margin-bottom: 20px;
       }
 
       #editor {
@@ -57,10 +68,12 @@
         margin: 0%;
       }
 
-      button,
+      .entry-btn,
       .btn {
-        padding: 7px 10px;
-        font-size: 13px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        padding: 10px 30px;
+        font-size: 16px;
         cursor: pointer;
         border-radius: 10px;
         background-color: #88b5e9;
@@ -73,8 +86,14 @@
       }
     </style>
   </head>
-  <body>
-    <h2 th:text="${editMode} ? '일기 수정' : '일기 작성'">일기 작성</h2>
+  <div>
+    <div th:replace="~{fragments/header :: header}"></div>
+    <h2
+      style="color: #4271a7"
+      th:text="${editMode} ? '일기 수정' : '일기 작성'"
+    >
+      일기 작성
+    </h2>
 
     <input type="hidden" id="diaryId" th:value="${diaryId}" />
     <input
@@ -93,7 +112,10 @@
     />
 
     <!-- 감정 -->
-    <label for="emotion">감정</label>
+    <label for="emotion" style="font-weight: bold; color: #4271a7"
+      >오늘의 기분은 어땠나요?</label
+    >
+
     <select id="emotion" name="emotion">
       <option
         th:each="emotion : ${emotions}"
@@ -102,9 +124,15 @@
         th:selected="${editMode} ? ${emotion.name()} == ${entry.emotion} : false"
       ></option>
     </select>
-
+    
+    <div style="position: relative; margin-bottom: 20px;">
+      <!-- 저장 버튼 -->
+      <button type="button" onclick="submitEntry()" class="entry-btn" style="position: absolute; top: -60px; right: 0;">
+        저장
+      </button>
     <!-- Toast UI Editor -->
     <div id="editor"></div>
+  </div>
 
     <!-- 태그 입력 -->
     <label for="tag-input">태그</label>
@@ -113,9 +141,6 @@
       id="tag-container"
       style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px"
     ></div>
-
-    <!-- 저장 버튼 -->
-    <button type="button" onclick="submitEntry()">저장</button>
 
     <!-- 데이터 주입 -->
     <script th:inline="javascript">
@@ -177,7 +202,8 @@
       const tags = [];
       document
         .getElementById("tag-input")
-        .addEventListener("keyup", function (e) { // keydown -> keyup
+        .addEventListener("keyup", function (e) {
+          // keydown -> keyup
           if (e.key === "Enter") {
             e.preventDefault();
             const value = e.target.value.trim();
@@ -188,7 +214,6 @@
             }
           }
         });
-
 
       function renderTags() {
         const container = document.getElementById("tag-container");
@@ -201,6 +226,7 @@
           label.textContent = tag;
 
           const deleteBtn = document.createElement("button");
+          deleteBtn.className = "entry-btn";
           deleteBtn.innerHTML = "&times;";
           deleteBtn.onclick = () => {
             const index = tags.indexOf(tag);
