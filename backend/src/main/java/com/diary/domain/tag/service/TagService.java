@@ -3,12 +3,17 @@ package com.diary.domain.tag.service;
 import com.diary.domain.entry.dto.EntryResponseDTO;
 import com.diary.domain.entry.entity.DiaryEntry;
 import com.diary.domain.entry.repository.DiaryEntryRepository;
+import com.diary.domain.member.entity.Member;
 import com.diary.domain.tag.dto.EntryTagsRequest;
 import com.diary.domain.tag.dto.TagRequest;
 import com.diary.domain.tag.dto.TagResponse;
 import com.diary.domain.tag.entity.Tag;
 import com.diary.domain.tag.repository.TagRepository;
+
+import com.diary.global.exception.CustomException;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,108 +23,100 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class TagService {
 
     private final TagRepository tagRepository;
     private final DiaryEntryRepository diaryEntryRepository;
 
-    public TagService(TagRepository tagRepository, DiaryEntryRepository diaryEntryRepository) {
-        this.tagRepository = tagRepository;
-        this.diaryEntryRepository = diaryEntryRepository;
-    }
-
-    // 1. 태그 생성
-    @Transactional
-    public TagResponse createTag(TagRequest request) {
-        // 이미 태그가 존재하는지 확인
-        Optional<Tag> existingTag = tagRepository.findByName(request.getName());
-
-        if (existingTag.isPresent()) {
-            // true -> 기존 태그 반환
-            Tag tag = existingTag.get();
-            return new TagResponse(tag.getId(), tag.getName());
-        }
-        // 새 태그 생성
-        Tag tag = new Tag();
-        tag.setName(request.getName());
-
-        Tag savedTag = tagRepository.save(tag);
-
-        return new TagResponse(savedTag.getId(), savedTag.getName());
-    }
-
-    // 2) 전체 태그 조회
+    // 로그인한 유저 기준으로 태그 조회
     @Transactional(readOnly = true)
-    public List<TagResponse> getAllTags() {
-        // 모든 태그 조회 후 DTO 변환 반환
+    public List<TagResponse> getAllTags(Member member) {
         return tagRepository.findAll().stream()
+                .filter(tag -> tag.getMember().equals(member))
                 .map(tag -> new TagResponse(tag.getId(), tag.getName()))
                 .collect(Collectors.toList());
     }
 
-    // 3) 태그 수정
     @Transactional
-    public TagResponse updateTag(Long tagId, TagRequest request) {
+    public TagResponse createTag(TagRequest request, Member member) {
+        Optional<Tag> existingTag = tagRepository.findByNameAndMember(request.getName(), member);
+        if (existingTag.isPresent()) {
+            Tag tag = existingTag.get();
+            return new TagResponse(tag.getId(), tag.getName());
+        }
+        Tag tag = new Tag(request.getName(), member);
+        Tag savedTag = tagRepository.save(tag);
+        return new TagResponse(savedTag.getId(), savedTag.getName());
+    }
+
+    @Transactional
+    public TagResponse updateTag(Long tagId, TagRequest request, Member member) {
         Tag tag = tagRepository.findById(tagId)
-                .orElseThrow(() -> new EntityNotFoundException("태그 번호 없음: " + tagId));
+                .filter(t -> t.getMember().equals(member))
+                .orElseThrow(() -> new EntityNotFoundException("태그 없음 또는 권한 없음"));
         tag.setName(request.getName());
-        Tag saved = tagRepository.save(tag);
-        return new TagResponse(saved.getId(), saved.getName());
+        return new TagResponse(tag.getId(), tag.getName());
     }
 
-    // 4) 태그 삭제
     @Transactional
-    public void deleteTag(Long tagId) {
+    public void deleteTag(Long tagId, Member member) {
         Tag tag = tagRepository.findById(tagId)
-                .orElseThrow(() -> new EntityNotFoundException("태그 번호 없음: " + tagId));
+                .filter(t -> t.getMember().equals(member))
+                .orElseThrow(() -> new EntityNotFoundException("태그 없음 또는 권한 없음"));
 
-        // 연결된 일기들에서 이 태그를 제거
         tag.getEntries().forEach(entry -> entry.getTags().remove(tag));
-        tag.getEntries().clear(); // 양방향 해제
-
+        tag.getEntries().clear();
         tagRepository.delete(tag);
-
     }
 
-
-    // 5) 태그별 일기 조회
     @Transactional(readOnly = true)
-    public List<EntryResponseDTO> getEntriesByTag(Long tagId) {
+    public List<EntryResponseDTO> getEntriesByTag(Long tagId, Member member) {
         Tag tag = tagRepository.findById(tagId)
-                .orElseThrow(() -> new EntityNotFoundException("Tag not found: " + tagId));
-        return tag.getEntries()
-                .stream()
+                .filter(t -> t.getMember().equals(member))
+                .orElseThrow(() -> new EntityNotFoundException("해당 태그 없음 또는 권한 없음"));
+
+        return tag.getEntries().stream()
                 .map(this::toEntryResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public void linkTagsToEntry(Long entryId, EntryTagsRequest request) {
-        // 일기 조회
+    public void linkTagsToEntry(Long entryId, EntryTagsRequest request, Member member) {
         DiaryEntry entry = diaryEntryRepository.findById(entryId)
                 .orElseThrow(() -> new RuntimeException("일기 번호 없음 : " + entryId));
-        // 태그 ID 목록으로 태그들 조회
-        List<Tag> tags = tagRepository.findAllById(request.getTagIds());
 
-        // 일기에 태그 추가
-        Set<Tag> entryTags = entry.getTags();
-        entryTags.addAll(tags);
+        // 권한 검사 (선택)
+        if (!entry.getAuthor().getId().equals(member.getId())) {
+            throw new CustomException("작성자가 아니므로 태그 연결 불가", HttpStatus.FORBIDDEN);
+        }
 
+        List<Tag> tags = request.getTagIds().stream()
+                .map(id -> tagRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("태그 없음: " + id)))
+                .collect(Collectors.toList());
+
+        entry.getTags().addAll(tags);
         diaryEntryRepository.save(entry);
     }
 
     @Transactional
-    public void removeTagFromEntry(Long entryId, Long tagId) {
+    public void removeTagFromEntry(Long entryId, Long tagId, Member member) {
         DiaryEntry entry = diaryEntryRepository.findById(entryId)
                 .orElseThrow(() -> new RuntimeException("일기 번호 없음 : " + entryId));
 
         Tag tag = tagRepository.findById(tagId)
-                .orElseThrow(() -> new RuntimeException("태그 번호 없음 : " + tagId));
+                .orElseThrow(() -> new RuntimeException("태그 없음: " + tagId));
 
-        entry.getTags().remove(tag); // 관계만 제거
+        // 권한 검사
+        if (!entry.getAuthor().getId().equals(member.getId())) {
+            throw new CustomException("작성자가 아니므로 태그 삭제 불가", HttpStatus.FORBIDDEN);
+        }
 
-        // 연관된 일기 없으면 태그도 제거
-        if (tag.getEntries().isEmpty()) {
+        entry.getTags().remove(tag);
+        tag.getEntries().remove(entry);
+
+        if (tag.getEntries().isEmpty() && tag.getMember().getId().equals(member.getId())) {
             tagRepository.delete(tag);
         }
 
@@ -127,7 +124,7 @@ public class TagService {
     }
 
 
-    // Helper: DiaryEntry → EntryResponse
+
     private EntryResponseDTO toEntryResponseDTO(DiaryEntry e) {
         return EntryResponseDTO.builder()
                 .id(e.getId())

@@ -23,6 +23,9 @@ public class CustomUserDetails implements UserDetails {
         return member.getNickname(); 
     }
 
+    public Long getMemberId() { return member.getId(); }
+
+
     @Override
     public String getUsername() {
         return member.getUserId(); // 로그인 ID 필드

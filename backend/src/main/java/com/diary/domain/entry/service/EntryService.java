@@ -117,8 +117,8 @@ public class EntryService {
         // 태그 처리
         if (requestDTO.getTags() != null) {
             for (String tagName : requestDTO.getTags()) {
-                Tag tag = tagRepository.findByName(tagName)
-                        .orElseGet(() -> tagRepository.save(new Tag(tagName)));
+                Tag tag = tagRepository.findByNameAndMember(tagName, author)
+                        .orElseGet(() -> tagRepository.save(new Tag(tagName, author)));
                 entry.getTags().add(tag);
             }
         }
@@ -211,6 +211,7 @@ public class EntryService {
         DiaryEntry entry = getEntryOrThrow(entryId);
         Long diaryId = entry.getDiary().getId();
         permissionChecker.checkAccess(memberId, diaryId);
+        Member member = getMemberOrThrow(memberId);
 
         if (!entry.getAuthor().getId().equals(memberId)) {
             throw new CustomException("작성자가 아니므로 수정 불가", HttpStatus.FORBIDDEN);
@@ -277,13 +278,11 @@ public class EntryService {
 
         // 태그 수정
         if (requestDto.getTags() != null) {
-            // 기존 태그 제거
             entry.getTags().clear();
 
-            // 새 태그 리스트
             for (String tagName : requestDto.getTags()) {
-                Tag tag = tagRepository.findByName(tagName)
-                        .orElseGet(() -> tagRepository.save(new Tag(tagName)));
+                Tag tag = tagRepository.findByNameAndMember(tagName, member)
+                        .orElseGet(() -> tagRepository.save(new Tag(tagName, member)));
                 entry.getTags().add(tag);
             }
         }
