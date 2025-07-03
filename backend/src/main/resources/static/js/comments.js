@@ -45,12 +45,23 @@ function renderCommentList(comments, parentElement) {
     commentDiv.className = "comment-item";
     commentDiv.setAttribute("data-comment-id", c.id);
 
+    let buttons = `<button onclick="showReplyForm(${c.id})">답글</button>`;
+
+    // 작성자인 경우에만 수정/삭제 버튼 보이기
+    if (c.memberId === loginMemberId) {
+      buttons += `
+        <button onclick="editComment(${c.id}, '${c.content.replace(
+        /'/g,
+        "\\'"
+      )}')">수정</button>
+        <button onclick="deleteComment(${c.id})">삭제</button>
+      `;
+    }
+
     commentDiv.innerHTML = `
   <p><span class="comment-author">${c.memberNickname}</span>: ${c.content}</p>
   <div class="comment-btn-group" id="btn-group-${c.id}">
-    <button onclick="showReplyForm(${c.id})">답글</button>
-    <button onclick="editComment(${c.id}, '${c.content.replace(/'/g, "\\'")}')">수정</button>
-    <button onclick="deleteComment(${c.id})">삭제</button>
+    ${buttons}
   </div>
   <div class="input-container" id="input-container-${c.id}"></div>
   <div id="children-${c.id}" class="reply-box"></div>
@@ -91,7 +102,9 @@ document
 
 // 4. 댓글 수정
 function editComment(commentId, oldContent) {
-  const inputContainer = document.getElementById(`input-container-${commentId}`);
+  const inputContainer = document.getElementById(
+    `input-container-${commentId}`
+  );
   if (!inputContainer) return;
 
   if (inputContainer.firstChild) {
@@ -99,7 +112,9 @@ function editComment(commentId, oldContent) {
     return;
   }
 
-  document.querySelectorAll(".input-container").forEach(div => div.innerHTML = "");
+  document
+    .querySelectorAll(".input-container")
+    .forEach((div) => (div.innerHTML = ""));
 
   const form = document.createElement("form");
   form.className = "edit-form-temp";
@@ -151,7 +166,7 @@ function showReplyForm(parentId) {
   }
 
   // 다른 입력창 제거
-  document.querySelectorAll(".input-container").forEach(div => {
+  document.querySelectorAll(".input-container").forEach((div) => {
     div.innerHTML = "";
   });
 
