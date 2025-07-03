@@ -46,7 +46,6 @@ public class EntryController {
         try {
             entryId = entryService.createEntry(requestDTO, authorId); // 서비스 호출
         } catch (IOException ex) {
-            ex.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "일기 저장 중 오류 발생"));
         }

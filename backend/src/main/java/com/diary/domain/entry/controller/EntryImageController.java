@@ -20,8 +20,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EntryImageController {
 
-    private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/";
-
     @PostMapping("/upload")
     public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("image") MultipartFile imageFile) {
         Map<String, String> result = new HashMap<>();
@@ -43,7 +41,6 @@ public class EntryImageController {
             return ResponseEntity.ok(result);
 
         } catch (IOException e) {
-            e.printStackTrace();
             result.put("error", "이미지 업로드 실패: " + e.getMessage());
             return ResponseEntity.internalServerError().body(result);
         }

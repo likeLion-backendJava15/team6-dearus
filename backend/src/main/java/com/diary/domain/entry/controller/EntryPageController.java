@@ -1,7 +1,5 @@
 package com.diary.domain.entry.controller;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.List;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +19,8 @@ import com.diary.domain.entry.service.EntryService;
 import com.diary.global.auth.CustomUserDetails;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequiredArgsConstructor
@@ -80,14 +80,14 @@ public class EntryPageController {
         try {
             tagsJson = objectMapper.writeValueAsString(entry.getTags());
         } catch (JsonProcessingException e) {
-            // 필요 시 로그 남기기
-            e.printStackTrace();
+            System.out.println("일기 수정 중 태그 저장 에러");
+            return "entry_form";
         }
 
         model.addAttribute("entry", entry);                  // 기존 entry 데이터 전달
         model.addAttribute("diaryId", entry.getDiaryId());   // 일기장 ID도 함께 전달
         model.addAttribute("emotions", Emotion.values());
-        model.addAttribute("editMode", true);                  // 수정 모드 플래그
+        model.addAttribute("editMode", true); // 수정 모드 플래그
         model.addAttribute("entryTagsJson", tagsJson);
         return "entry_form";  // 기존 entry_form.html 그대로 사용
     }

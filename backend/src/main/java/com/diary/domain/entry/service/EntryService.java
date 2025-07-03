@@ -233,7 +233,7 @@ public class EntryService {
                     Files.createDirectories(target.getParent());
                     Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println("이미지 처리 중 에러 발생 : " + e.getMessage());
                 }
                 content = content.replace(url, "/uploads/" + filename);
 

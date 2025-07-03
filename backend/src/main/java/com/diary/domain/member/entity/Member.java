@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "`user`") // ⚠️ 백틱으로 감싸야 예약어 충돌 방지됨
+@Table(name = "`user`") // 백틱으로 예약어 충돌 방지
 @Getter
 @Setter
 @NoArgsConstructor

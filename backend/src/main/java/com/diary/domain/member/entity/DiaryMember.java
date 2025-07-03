@@ -3,7 +3,6 @@ package com.diary.domain.member.entity;
 import java.time.LocalDateTime;
 
 import com.diary.domain.diary.entity.Diary;
-import com.diary.domain.member.entity.Member;
 
 import jakarta.persistence.*;
 import lombok.*;
