@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # 개발 중에는 update, 운영은 validate or none 권장
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -15,7 +15,7 @@ spring:
     database-platform: org.hibernate.dialect.MySQLDialect
 
   thymeleaf:
-    cache: false # 개발 중에는 캐시 끄기 (수정 즉시 반영)
+    cache: false
 
   servlet:
     multipart:
@@ -25,12 +25,15 @@ spring:
   mvc:
     hiddenmethod:
       filter:
-        enabled: true # PUT, DELETE 처리 위해 필요 (form에서 _method 사용 시)
+        enabled: true
 
 logging:
   level:
     org.hibernate.SQL: debug
-    org.hibernate.type: trace # 바인딩 파라미터까지 확인 가능 (실무에선 trace는 끄는 편)
+    org.hibernate.type: trace
 
 server:
   port: 9000
+
+jwt:
+  secret: your-super-secret-key-should-be-long-enough

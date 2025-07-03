@@ -33,6 +33,11 @@ public class CustomUserDetails implements UserDetails {
         return member.getPassword();
     }
 
+    public String getEmail() {
+        return member.getEmail();
+    }
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // 권한이 없다면 기본적으로 USER 하나만 부여
