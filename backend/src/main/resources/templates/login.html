@@ -2,82 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8"/>
+    <link rel="stylesheet" th:href="@{/css/session.css}" />
+    <link rel="stylesheet" th:href="@{/css/login.css}" />
     <title>로그인</title>
-    <style>
-        :root {
-            --primary-color: #4A90E2;
-            --secondary-color: #F5F7FA;
-            --accent-color: #50E3C2;
-            --text-color: #333;
-            --border-radius: 8px;
-            --transition: 0.3s ease;
-        }
-        body {
-            background: var(--secondary-color);
-            color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 400px;
-            margin: 5rem auto;
-            background: #fff;
-            padding: 2rem;
-            border-radius: var(--border-radius);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        h1 {
-            margin-bottom: 1.5rem;
-            color: var(--primary-color);
-            text-align: center;
-        }
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ccc;
-            border-radius: var(--border-radius);
-            transition: border-color var(--transition);
-        }
-        .form-group input:focus {
-            border-color: var(--primary-color);
-            outline: none;
-        }
-        button {
-            width: 100%;
-            padding: 0.75rem;
-            background: var(--primary-color);
-            color: #fff;
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: background var(--transition);
-            font-size: 1rem;
-        }
-        button:hover {
-            background: var(--accent-color);
-        }
-        .link {
-            text-align: center;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-        }
-        .link a {
-            color: var(--primary-color);
-            text-decoration: none;
-            transition: color var(--transition);
-        }
-        .link a:hover {
-            color: var(--accent-color);
-        }
-    </style>
 </head>
 <body>
 <div class="container">

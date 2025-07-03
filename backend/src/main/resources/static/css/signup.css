@@ -1,0 +1,22 @@
+:root {
+  --primary-color: #4a90e2;
+  --secondary-color: #f5f7fa;
+  --accent-color: #50e3c2;
+  --text-color: #333;
+  --border-radius: 8px;
+  --transition: 0.3s ease;
+}
+
+.container {
+  max-width: 500px;
+  margin: 3rem auto;
+}
+
+h1 {
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+}
+
+button {
+  margin-top: 1rem;
+}

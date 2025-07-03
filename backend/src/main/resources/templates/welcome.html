@@ -1,70 +1,19 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
-<head>
-    <meta charset="UTF-8"/>
+  <head>
+    <meta charset="UTF-8" />
     <title>환영합니다</title>
-    <style>
-        :root {
-            --primary-color: #4A90E2;
-            --secondary-color: #F5F7FA;
-            --accent-color: #50E3C2;
-            --text-color: #333;
-            --border-radius: 8px;
-            --transition: 0.3s ease;
-        }
-        body {
-            background: var(--secondary-color);
-            color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .container {
-            text-align: center;
-            background: #fff;
-            padding: 3rem 2rem;
-            border-radius: var(--border-radius);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            max-width: 500px;
-            width: 90%;
-        }
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
-            color: var(--primary-color);
-        }
-        .subtitle {
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-            color: #555;
-        }
-        .link a {
-            display: inline-block;
-            margin: 0 0.5rem;
-            padding: 0.5rem 1.2rem;
-            background: var(--primary-color);
-            color: #fff;
-            border-radius: var(--border-radius);
-            text-decoration: none;
-            transition: background var(--transition);
-        }
-        .link a:hover {
-            background: var(--accent-color);
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h1>일상의 행복을 기록하는 공간</h1>
-    <p class="subtitle">DearUS와 함께 매일의 순간을 남겨보세요.</p>
-    <div class="link">
+    <link rel="stylesheet" th:href="@{/css/session.css}" />
+    <link rel="stylesheet" th:href="@{/css/welcome.css}" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>일상의 행복을 기록하는 공간</h1>
+      <p class="subtitle">DearUS와 함께 매일의 순간을 남겨보세요.</p>
+      <div class="link">
         <a th:href="@{/login}">로그인</a> |
         <a th:href="@{/signup}">회원가입</a>
+      </div>
     </div>
-</div>
-</body>
+  </body>
 </html>

@@ -3,82 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <title>내 일기장</title>
-    <link rel="stylesheet" th:href="@{/css/entry.css}" />
+    <link rel="stylesheet" th:href="@{/css/common.css}" />
+    <link rel="stylesheet" th:href="@{/css/list.css}" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
     />
     <style>
-      body {
-        padding: 20px;
-        font-family: "Pretendard", sans-serif;
-      }
-
-      .diary-list {
-        list-style: none;
-        padding: 0;
-      }
-
-      .diary-item {
-        border-bottom: 1px solid #ddd;
-        padding: 10px 0;
-        padding-bottom: 24px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .diary-name {
-        font-weight: bold;
-        font-size: 18px;
-        color: rgb(0, 0, 0);
-        text-decoration: none;
-        cursor: pointer;
-        transition: color 0.2s ease;
-      }
-
-      .diary-name:hover {
-        color: #4271a7;
-      }
-
       .button-container {
         display: flex;
         gap: 10px;
         margin-top: 20px;
-      }
-
-      button,
-      .btn {
-        padding: 7px 10px;
-        font-size: 13px;
-        cursor: pointer;
-        border-radius: 10px;
-        background-color: #88b5e9;
-        color: rgb(255, 255, 255);
-        font-weight: bold;
-        text-decoration: none;
-        display: inline-block;
-        border: none;
-        transition: background-color 0.2s ease;
-      }
-
-      .btn:hover {
-        background-color: #4271a7;
-      }
-
-      .diary-item {
-        margin-top: 10px;
-        margin-bottom: 10px;
-      }
-
-      input {
-        font-family: "Pretendard", sans-serif;
-        padding: 10px;
-        padding-left: 15px;
-        font-size: 16px;
-        width: 300px;
-        border: 1px solid #ccc;
-        border-radius: 10px;
       }
     </style>
   </head>
@@ -147,69 +82,9 @@
       </li>
     </ul>
 
-    <!--  --  --  --  -- script --  --  --  -- -->
-    <script>
-      // 멤버 초대
-      const diaryId = /*[[${diaryId}]]*/ 0; // Thymeleaf에서 diaryId 주입
-
-      function toggleInviteForm(diaryId) {
-        const form = document.getElementById(`invite-form-${diaryId}`);
-        form.style.display = form.style.display === "none" ? "block" : "none";
-      }
-
-      function sendInvite(diaryId) {
-        const emailInput = document.getElementById(`invite-email-${diaryId}`);
-        const email = emailInput.value.trim();
-
-        if (!email) {
-          alert("초대를 보낼 이메일을 입력해주세요.");
-          return;
-        }
-
-        fetch(`/api/diary/${diaryId}/invite`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email: email }),
-        })
-          .then(async (res) => {
-            if (!res.ok) {
-              let errorMessage = "초대 실패";
-              try {
-                const errorData = await res.json();
-                if (errorData.message) errorMessage = errorData.message;
-              } catch (err) {
-                console.warn("JSON 파싱 실패:", err);
-              }
-              throw new Error(errorMessage);
-            }
-            alert("초대가 성공적으로 전송되었습니다.");
-            emailInput.value = "";
-            toggleInviteForm(diaryId);
-          })
-          .catch((err) => {
-            alert("❗ Error : " + err.message);
-          });
-      }
-
-      // 일기장 삭제
-      function deleteDiary(diaryId) {
-        if (!confirm("정말 일기장을 삭제하시겠습니까?")) return;
-
-        fetch(`/api/diary/${diaryId}`, {
-          method: "DELETE",
-        })
-          .then((res) => {
-            if (!res.ok) throw new Error("삭제 실패");
-            return res.status === 204 ? null : res.json(); // ✅ 204면 JSON 파싱 안함
-          })
-          .then(() => {
-            alert("삭제 완료");
-            location.reload();
-          })
-          .catch((err) => alert(err.message));
-      }
+    <script th:inline="javascript">
+      const diaryId = [[${diaryId}]];
     </script>
+    <script th:src="@{/js/diary_list.js}"></script>
   </body>
 </html>

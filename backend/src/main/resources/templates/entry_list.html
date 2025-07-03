@@ -3,109 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <title>일기 목록</title>
-    <link rel="stylesheet" th:href="@{/css/entry.css}" />
+    <link rel="stylesheet" th:href="@{/css/common.css}" />
+    <link rel="stylesheet" th:href="@{/css/list.css}" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
     />
-    <style>
-      body {
-        padding: 20px;
-        font-family: "Pretendard", sans-serif;
-      }
-      .entry-list {
-        list-style: none;
-        padding: 0;
-      }
-      .entry-item {
-        border-bottom: 1px solid #ddd;
-        padding: 10px 0;
-      }
-      .entry-title {
-        font-weight: bold;
-        font-size: 18px;
-        margin-bottom: 5px;
-        color: rgb(0, 0, 0);
-        text-decoration: none;
-        cursor: pointer;
-        transition: color 0.2s ease;
-      }
-
-      .entry-title:hover {
-        color: #4271a7;
-      }
-
-      .entry-meta {
-        font-size: 14px;
-        color: #666;
-      }
-
-      .tag-item {
-        background: #e0f3f1;
-        margin-right: 5px;
-        padding: 5px 10px;
-        border-radius: 12px;
-        font-size: 14px;
-        display: inline-block;
-      }
-
-      .button-container {
-        display: flex;
-        gap: 10px;
-      }
-
-      .write-btn {
-        margin-top: 40px;
-        padding: 7px 10px;
-        font-size: 13px;
-        cursor: pointer;
-        border-radius: 10px;
-        background-color: #f2f6ff;
-        color: #3167c5;
-        font-weight: bold;
-        text-decoration: none;
-        display: inline-block;
-        border: none;
-        transition: background-color 0.2s ease;
-      }
-
-      .write-btn:hover {
-        background-color: #88b5e9;
-        color: #ffffff;
-      }
-
-      button,
-      .btn {
-        padding: 7px 10px;
-        font-size: 13px;
-        cursor: pointer;
-        border-radius: 10px;
-        background-color: #88b5e9;
-        color: rgb(255, 255, 255);
-        font-weight: bold;
-        text-decoration: none;
-        display: inline-block;
-        border: none;
-        transition: background-color 0.2s ease;
-      }
-
-      .title-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .emotion-stats-btn {
-        background-color: #74b9ff;
-        color: white;
-        border: none;
-        padding: 7px 14px;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 13px;
-      }
-    </style>
   </head>
   <body>
     <div th:replace="~{fragments/header :: header}"></div>
@@ -186,41 +89,10 @@
       </li>
     </ul>
 
-    <!-- 감정별 이모지 매핑 스크립트 -->
     <script th:inline="javascript">
-      /*<![CDATA[*/
-      function getEmotionEmoji(emotion) {
-        const map = {
-          행복해: "😊",
-          즐거워: "😄",
-          감사해: "🙏",
-          사랑해: "❤️",
-          뿌듯해: "😌",
-          그저그래: "😐",
-          화나: "😡",
-          힘들어: "😫",
-        };
-        return map[emotion] || "";
-      }
-      /*]]>*/
+      window.diaryId = [[${diaryId}]];
     </script>
-    <script>
-      function deleteEntry(entryId, diaryId) {
-        if (!confirm("정말 삭제하시겠습니까?")) return;
 
-        fetch(`/api/entry/${entryId}`, {
-          method: "DELETE",
-        })
-          .then((res) => {
-            if (!res.ok) throw new Error("삭제 실패");
-            return res.json();
-          })
-          .then(() => {
-            alert("삭제 완료");
-            location.href = `/entry/list?diaryId=${diaryId}`;
-          })
-          .catch((err) => alert(err.message));
-      }
-    </script>
+    <script th:src="@{/js/entry_list.js}"></script>
   </body>
 </html>

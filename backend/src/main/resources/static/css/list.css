@@ -1,0 +1,80 @@
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  border-bottom: 1px solid #ddd;
+  padding: 10px 0;
+  padding-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+a {
+  font-weight: bold;
+  font-size: 18px;
+  color: rgb(0, 0, 0);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #4271a7;
+}
+
+.btn:hover {
+  color: white;
+}
+
+/* 일기 목록 css */
+.entry-meta {
+  font-size: 14px;
+  color: #666;
+  margin: 8px 0px;
+}
+
+.tag-item {
+  background: #e0f3f1;
+  margin-right: 5px;
+  margin-top: 8px;
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 14px;
+  display: inline-block;
+}
+
+.button-container {
+  display: flex;
+  gap: 10px;
+}
+
+.write-btn {
+  margin-top: 40px;
+  padding: 7px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 10px;
+  background-color: #f2f6ff;
+  color: #3167c5;
+  font-weight: bold;
+  text-decoration: none;
+  display: inline-block;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+.write-btn:hover {
+  background-color: #88b5e9;
+  color: #ffffff;
+}
+
+.title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

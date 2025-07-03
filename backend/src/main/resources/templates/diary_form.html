@@ -11,38 +11,9 @@
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
     />
     <style>
-      body {
-        padding: 20px;
-        font-family: "Pretendard", sans-serif;
-      }
-
-      input {
-        font-family: "Pretendard", sans-serif;
-        padding: 10px;
-        font-size: 16px;
-        width: 300px;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-      }
-
       .btn {
-        margin-top: 10px;
-        margin-bottom: 10px;
         padding: 10px 30px;
         font-size: 16px;
-        cursor: pointer;
-        border-radius: 10px;
-        background-color: #88b5e9;
-        color: rgb(255, 255, 255);
-        font-weight: bold;
-        text-decoration: none;
-        display: inline-block;
-        border: none;
-        transition: background-color 0.2s ease;
-      }
-
-      .btn:hover {
-        background-color: #4271a7;
       }
     </style>
   </head>
@@ -78,37 +49,12 @@
 
     <!-- JS로 POST or PUT 요청 처리 -->
     <script th:inline="javascript">
-      const editMode = [[${editMode}]];
-      const diaryId = [[${diaryId}]];
-      const submitBtn = document.getElementById("submitBtn");
-
-      submitBtn.addEventListener("click", () => {
-        const name = document.getElementById("diaryName").value.trim();
-        if (!name) {
-          alert("이름을 입력해주세요.");
-          return;
-        }
-
-        const url = editMode ? `/api/diary/${diaryId}` : `/api/diary`;
-        const method = editMode ? "PUT" : "POST";
-
-        fetch(url, {
-          method: method,
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name }),
-        })
-          .then((res) => {
-            if (!res.ok) throw new Error("요청 실패");
-            return res.json();
-          })
-          .then((data) => {
-            alert(editMode ? "수정 완료" : "생성 완료");
-            location.href = "/diary";
-          })
-          .catch((err) => alert(err.message));
-      });
+      window.editMode = [[${editMode}]];
     </script>
+    <script th:inline="javascript">
+      window.diaryId = [[${diaryId}]];
+    </script>
+
+    <script th:src="@{/js/diary_form.js}"></script>
   </body>
 </html>
