@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "tag")
+@Table( name = "tag", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "name"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,7 +20,7 @@ public class Tag {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false,unique = true)
+    @Column(nullable = false)
     private String name; // 중복 불가 태그 이름
 
     @ManyToMany(mappedBy = "tags", fetch=FetchType.LAZY) //일기와 태그는 다대다 관계이며, DiaryEntry 클래스의 tags 필드에 의해 매핑됨

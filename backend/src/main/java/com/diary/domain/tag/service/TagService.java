@@ -13,6 +13,7 @@ import com.diary.domain.tag.repository.TagRepository;
 import com.diary.global.exception.CustomException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,15 +41,18 @@ public class TagService {
 
     @Transactional
     public TagResponse createTag(TagRequest request, Member member) {
-        Optional<Tag> existingTag = tagRepository.findByNameAndMember(request.getName(), member);
-        if (existingTag.isPresent()) {
-            Tag tag = existingTag.get();
+        try {
+            Tag tag = tagRepository.findByNameAndMember(request.getName(), member)
+                    .orElseGet(() -> tagRepository.save(new Tag(request.getName(), member)));
+            return new TagResponse(tag.getId(), tag.getName());
+        } catch (DataIntegrityViolationException e) {
+            // 중복 삽입을 막기 위한 예외 캐치 (동시성 등)
+            Tag tag = tagRepository.findByNameAndMember(request.getName(), member)
+                    .orElseThrow(() -> new CustomException("중복 태그 오류", HttpStatus.CONFLICT));
             return new TagResponse(tag.getId(), tag.getName());
         }
-        Tag tag = new Tag(request.getName(), member);
-        Tag savedTag = tagRepository.save(tag);
-        return new TagResponse(savedTag.getId(), savedTag.getName());
     }
+
 
     @Transactional
     public TagResponse updateTag(Long tagId, TagRequest request, Member member) {
