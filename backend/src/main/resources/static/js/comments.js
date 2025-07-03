@@ -1,5 +1,6 @@
-// const entryId = /*[[${entryId}]]*/ 0;
-//       const token = localStorage.getItem("accessToken");
+const entryId = window.entryId;
+const token = window.token;
+const loginMemberId = window.loginMemberId;
 
 // 1. 댓글 목록 조회
 async function loadComments() {
