@@ -50,4 +50,5 @@ public class Comment {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
 }
