@@ -1,5 +1,7 @@
 package com.diary.global.exception;
 
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -8,8 +10,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<String> handleCustomException(CustomException ex) {
-        return ResponseEntity.status(ex.getStatus()).body(ex.getMessage());
+    public ResponseEntity<Map<String, String>> handleCustomException(CustomException ex) {
+        return ResponseEntity
+                .status(ex.getStatus())
+                .body(Map.of("message", ex.getMessage())); // ✅ JSON 객체로 반환
     }
 
     // Validation 예외, 기타 예외도 여기에 추가
