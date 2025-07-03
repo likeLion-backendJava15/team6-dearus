@@ -5,22 +5,26 @@
     <title>감정 통계</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+
       body {
         font-family: Arial, sans-serif;
-        background-color: #f8f9fa;
+        background-color: white;
         color: #333;
         margin: 0;
         padding: 20px;
-        display: flex;
-        justify-content: center;
+        /* display: flex;
+        justify-content: center; */
+        margin: 8px;
       }
+
       .container {
         max-width: 900px;
-        width: 100%;
+        width: 90%;
         padding: 20px;
         background: white;
         border-radius: 8px;
         box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        margin: 0 auto;
       }
 
       h2 {
@@ -70,7 +74,8 @@
       }
 
       /* 버튼 스타일 */
-      #backToDiaryListBtn, #openDatePickerBtn {
+      #backToDiaryListBtn,
+      #openDatePickerBtn {
         background-color: #74b9ff;
         color: white;
         border: none;
@@ -82,7 +87,8 @@
         user-select: none;
         transition: background-color 0.25s ease;
       }
-      #backToDiaryListBtn:hover, #openDatePickerBtn:hover {
+      #backToDiaryListBtn:hover,
+      #openDatePickerBtn:hover {
         background-color: #0984e3;
       }
 
@@ -194,7 +200,7 @@
 
       #userPieChart {
         width: 100% !important;
-        height: auto !important; 
+        height: auto !important;
         aspect-ratio: 1 / 1;
         display: block;
       }
@@ -209,6 +215,7 @@
     </style>
   </head>
   <body>
+    <div th:replace="~{fragments/header :: header}"></div>
     <div class="container">
       <div class="header-row">
         <h2>전체 감정 통계</h2>
@@ -277,9 +284,11 @@
       let userPieChart = null;
 
       // 일기 목록으로 돌아가기 버튼 이벤트
-      document.getElementById('backToDiaryListBtn').addEventListener('click', () => {
-        location.href = `/entry/list?diaryId=${diaryId}`;
-      });
+      document
+        .getElementById("backToDiaryListBtn")
+        .addEventListener("click", () => {
+          location.href = `/entry/list?diaryId=${diaryId}`;
+        });
 
       function showTooltip(e, text) {
         tooltip.style.opacity = 1;
