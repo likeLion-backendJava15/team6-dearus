@@ -13,8 +13,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleCustomException(CustomException ex) {
         return ResponseEntity
                 .status(ex.getStatus())
-                .body(Map.of("message", ex.getMessage())); // ✅ JSON 객체로 반환
+                .body(Map.of("message", ex.getMessage())); // JSON 객체로 반환
     }
 
-    // Validation 예외, 기타 예외도 여기에 추가
 }

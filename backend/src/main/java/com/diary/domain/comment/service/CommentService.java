@@ -22,9 +22,7 @@ import com.diary.domain.member.repository.MemberRepository;
 import com.diary.global.auth.CustomUserDetails;
 import com.diary.global.exception.CustomException;
 
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -34,9 +32,6 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final DiaryEntryRepository diaryEntryRepository;
     private final MemberRepository memberRepository;
-
-    @PersistenceContext
-    private EntityManager em;
 
     private Member getMemberOrThrow(Long memberId) {
         return memberRepository.findById(memberId)
