@@ -46,25 +46,21 @@ pipeline {
     stage('Deploy') {
       steps {
         echo '🚀 Docker Compose로 배포 시작'
-
         dir('backend') {
           withCredentials([
-            usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'CRED_DB_USER', passwordVariable: 'CRED_DB_PASS'),
-            usernamePassword(credentialsId: 'mysql-root', usernameVariable: 'CRED_MYSQL_USER', passwordVariable: 'CRED_MYSQL_ROOT_PASS')
+            usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'DB_USERNAME', passwordVariable: 'DB_PASSWORD'),
+            usernamePassword(credentialsId: 'mysql-root', usernameVariable: 'MYSQL_USER', passwordVariable: 'MYSQL_ROOT_PASSWORD')
           ]) {
             withEnv([
-              "DB_NAME=dearus",
-              "DB_USERNAME=${CRED_DB_USER}",
-              "DB_PASSWORD=${CRED_DB_PASS}",
-              "MYSQL_ROOT_PASSWORD=${CRED_MYSQL_ROOT_PASS}",
-              "DB_URL=jdbc:mysql://dearus-db:3306/dearus?useSSL=false&serverTimezone=Asia/Seoul"
+              "DB_URL=jdbc:mysql://dearus-db:3306/dearus",
+              "DB_USERNAME=$DB_USERNAME",
+              "DB_PASSWORD=$DB_PASSWORD",
+              "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD"
             ]) {
-              sh '''
-                echo 🔐 DB 접속 확인 - 사용자: $DB_USERNAME
-
+              sh """
                 docker compose down || true
-                docker compose up -d
-              '''
+                docker compose up -d --build
+              """
             }
           }
         }

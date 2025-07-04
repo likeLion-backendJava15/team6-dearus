@@ -7,8 +7,10 @@ services:
     container_name: dearus-app
     ports:
       - "9000:9000"
-    env_file:
-      - .env
+    environment:
+      - DB_URL=jdbc:mysql://dearus-db:3306/dearus
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
     depends_on:
       mysql:
         condition: service_healthy
@@ -19,7 +21,7 @@ services:
     image: mysql:8.0
     container_name: dearus-db
     environment:
-      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_DATABASE: dearus
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
