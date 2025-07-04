@@ -46,18 +46,17 @@ pipeline {
     stage('Deploy') {
       steps {
         echo '🚀 Docker Compose로 배포 시작'
+        dir('backend') { // docker-compose.yml 있는 폴더로 이동
+          withCredentials([usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')]) {
+            sh """
+              echo "DB 접속 확인용 - 사용자: $DB_USER"
 
-        // 자격 증명 사용
-        withCredentials([usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')]) {
-          sh """
-            echo "DB 접속 확인용 - 사용자: \$DB_USER"
+              # 기존 컨테이너 종료
+              docker compose down
 
-            # 기존 컨테이너 종료
-            docker compose down
-
-            # 최신 코드로 재배포
-            docker compose up -d --build
-          """
+              # 최신 코드로 재배포
+              docker compose up -d
+            """
         }
       }
     }
