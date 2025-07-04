@@ -10,5 +10,6 @@ FROM openjdk:21
 WORKDIR /app
 COPY --from=builder /app/target/DearUs-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 9000
+
 # Spring Boot가 환경변수를 통해 DB 접속하도록 설정
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java -jar -Dspring.datasource.url=$DB_URL -Dspring.datasource.username=$DB_USERNAME -Dspring.datasource.password=$DB_PASSWORD app.jar"]
