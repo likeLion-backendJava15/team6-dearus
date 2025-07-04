@@ -168,6 +168,7 @@ public class EntryService {
                             .diaryId(entry.getDiary().getId())
                             .authorId(entry.getAuthor().getId())
                             .title(entry.getTitle())
+                            .content(entry.getContent())
                             .emotion(entry.getEmotion())
                             .imageUrl(entry.getImageUrl())
                             .authorNickname(entry.getAuthor().getNickname())

@@ -9,7 +9,7 @@ target/
 *.tmp
 *.bak
 *.swp
-
+.env
 
 ### STS ###
 .apt_generated

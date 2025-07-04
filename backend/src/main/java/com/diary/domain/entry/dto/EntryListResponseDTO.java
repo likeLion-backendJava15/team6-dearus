@@ -15,6 +15,7 @@ public class EntryListResponseDTO { // 목록 조회
     private Long diaryId;
     private Long authorId;
     private String title;
+    private String content;
     private Emotion emotion;
     private String imageUrl;
     private String authorNickname;
