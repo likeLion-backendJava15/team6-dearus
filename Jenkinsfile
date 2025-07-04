@@ -57,10 +57,10 @@ pipeline {
               # 최신 코드로 재배포
               docker compose up -d
             """
+          }
         }
       }
     }
-
   }
 
   post {
