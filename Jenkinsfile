@@ -7,13 +7,13 @@ pipeline {
   }
 
   environment {
-    IMAGE_NAME = 'yennies/dearus-app' // TODO: 본인 DockerHub ID로 교체
+    IMAGE_NAME = 'yennies/dearus-app'
   }
 
   stages {
     stage('Build') {
       steps {
-        dir("${env.WORK_DIR}") {
+        dir('backend') {
           echo '📦 Maven build 시작'
           sh 'mvn clean package -DskipTests'
         }
@@ -22,30 +22,29 @@ pipeline {
 
     stage('Docker Build') {
       steps {
-        dir("${env.WORK_DIR}") {
+        dir('backend') {
           echo '🐳 Docker 이미지 빌드'
           sh 'docker build -t $IMAGE_NAME .'
         }
       }
     }
 
-
     stage('Docker Push') {
       steps {
-        dir("${env.WORK_DIR}") {
+        dir('backend') {
           echo '📤 DockerHub 푸시'
           withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
             sh '''
               echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
               docker push $IMAGE_NAME
             '''
+          }
         }
       }
     }
   }
-}
 
- post {
+  post {
     success {
       echo "✅ 빌드 및 Docker 이미지 푸시 완료"
     }
