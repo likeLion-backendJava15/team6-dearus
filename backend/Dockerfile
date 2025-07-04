@@ -9,7 +9,6 @@ RUN mvn clean install -DskipTests
 FROM openjdk:21
 WORKDIR /app
 COPY --from=builder /app/target/DearUs-0.0.1-SNAPSHOT.jar app.jar
-COPY .env .env
 EXPOSE 9000
 # Spring Boot가 환경변수를 통해 DB 접속하도록 설정
 ENTRYPOINT ["java", "-jar", "app.jar"]
