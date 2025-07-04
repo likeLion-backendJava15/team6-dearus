@@ -71,10 +71,3 @@ CREATE TABLE Comment (
   FOREIGN KEY (user_id)  REFERENCES User(id) ON DELETE CASCADE,
   FOREIGN KEY (parent_comment_id) references comment(id) on delete cascade
 );
-
-SET SQL_SAFE_UPDATES = 0;
-
-SET SQL_SAFE_UPDATES = 1;
-
-SHOW PROCESSLIST;
-

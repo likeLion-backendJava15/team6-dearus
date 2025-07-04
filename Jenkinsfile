@@ -51,17 +51,15 @@ pipeline {
             usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'DB_USERNAME', passwordVariable: 'DB_PASSWORD'),
             usernamePassword(credentialsId: 'mysql-root', usernameVariable: 'MYSQL_USER', passwordVariable: 'MYSQL_ROOT_PASSWORD')
           ]) {
-            withEnv([
-              "DB_URL=jdbc:mysql://dearus-db:3306/dearus",
-              "DB_USERNAME=$DB_USERNAME",
-              "DB_PASSWORD=$DB_PASSWORD",
-              "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD"
-            ]) {
-              sh """
-                docker compose down || true
-                docker compose up -d --build
-              """
-            }
+            sh """
+              DB_NAME=dearus \\
+              DB_URL=jdbc:mysql://dearus-db:3306/dearus \\
+              DB_USERNAME=$DB_USERNAME \\
+              DB_PASSWORD=$DB_PASSWORD \\
+              MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \\
+              docker compose up -d --build
+            """
+
           }
         }
       }
