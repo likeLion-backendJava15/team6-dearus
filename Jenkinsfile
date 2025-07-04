@@ -46,17 +46,29 @@ pipeline {
     stage('Deploy') {
       steps {
         echo '🚀 Docker Compose로 배포 시작'
-        dir('backend') { // docker-compose.yml 있는 폴더로 이동
-          withCredentials([usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')]) {
-            sh """
-              echo "DB 접속 확인용 - 사용자: $DB_USER"
+        dir('backend') {
+          withCredentials([
+            usernamePassword(credentialsId: 'db-credentials', usernameVariable: 'DB_USERNAME', passwordVariable: 'DB_PASSWORD'),
+            usernamePassword(credentialsId: 'mysql-root', usernameVariable: 'MYSQL_USER', passwordVariable: 'MYSQL_ROOT_PASSWORD')
+          ]) {
+            withEnv([
+              'DB_NAME=dearus',
+              "DB_USERNAME=$DB_USERNAME",
+              "DB_PASSWORD=$DB_PASSWORD",
+              "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD"
+            ]) {
+              sh """
+                echo "DB 접속 확인용 - 사용자: $DB_USER"
 
-              # 기존 컨테이너 종료
-              docker compose down
+                # 기존 컨테이너 종료
+                docker compose down
 
-              # 최신 코드로 재배포
-              docker compose up -d
-            """
+                # 최신 코드로 재배포
+                docker compose up -d
+              """
+            }
+            
+            
           }
         }
       }
