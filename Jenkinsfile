@@ -59,8 +59,16 @@ pipeline {
             ]) {
               sh '''
                 echo "🔐 DB 접속 확인 - 사용자: $DB_USERNAME"
-                
-                # 기존 컨테이너 종료
+
+                # .env 파일 생성
+                cat <<EOF > .env
+                DB_NAME=$DB_NAME
+                DB_USERNAME=$DB_USERNAME
+                DB_PASSWORD=$DB_PASSWORD
+                MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+                EOF
+
+                # 기존 컨테이너 종료 (실패 무시)
                 docker compose down || true
 
                 # 최신 코드로 재배포
@@ -71,6 +79,7 @@ pipeline {
         }
       }
     }
+
 
   }
 
